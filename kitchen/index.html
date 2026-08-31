@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kitchen Display System | Harvest Kitchen</title>
+  <link rel="icon" type="image/png" href="../customer/images/logo-icon.png" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" href="../customer/images/logo.png" media="(prefers-color-scheme: light)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/kitchen.css?v=icons_brand_v11">
+</head>
+<body>
+
+  <!-- KDS Clean Header -->
+  <header class="kds-header">
+    <div class="kds-brand">
+      <a href="../customer/index.html" class="kds-logo-link" title="Harvest Kitchen">
+        <img src="../customer/images/logo.png" alt="Harvest Kitchen" class="kds-logo">
+      </a>
+    </div>
+
+    <div class="kds-controls">
+      <!-- Live Clock -->
+      <div class="kds-stat-pill clock-pill">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="kdsClock">00:00:00</span>
+      </div>
+
+      <!-- Active Orders Count -->
+      <div class="kds-stat-pill active-pill">
+        <span class="pill-label">Active Orders</span>
+        <span id="kdsActiveTotal" class="pill-badge">0</span>
+      </div>
+
+      <!-- Speed & Quality Target -->
+      <div class="kds-stat-pill speed-pill" title="Speed of Service Target: &lt; 20 mins">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span id="kdsSpeedTarget">Prep: ~18m Target</span>
+      </div>
+
+      <!-- Icon Actions -->
+      <div class="kds-icon-group">
+        <!-- Sound Settings Button -->
+        <button id="btnSoundToggle" class="kds-icon-btn" onclick="openSoundModal()" title="Sound &amp; Voice Settings">
+          <svg id="soundIconOn" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          <svg id="soundIconOff" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+        </button>
+
+        <!-- Fullscreen Button -->
+        <button id="btnFullscreen" class="kds-icon-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+      </div>
+
+      <!-- Refresh Action -->
+      <button id="btnRefreshKds" class="kds-btn btn-refresh" onclick="manualRefresh()">
+        <svg id="refreshSpinner" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+        <span>Refresh</span>
+      </button>
+
+      <!-- Admin Panel Link -->
+      <a href="../admin/dashboard.html" class="kds-btn btn-admin">
+        <span>Admin Panel</span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- Channel Source Filter Bar with Brand Logos -->
+  <nav class="kds-channel-bar">
+    <div class="channel-tabs" id="channelTabs">
+      <button class="channel-tab active" data-channel="ALL" onclick="filterByChannel('ALL')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>All Channels</span>
+        <span class="tab-count" id="countAll">0</span>
+      </button>
+      
+      <!-- Dine-In with Logo.png -->
+      <button class="channel-tab tab-dinein" data-channel="DINE_IN" onclick="filterByChannel('DINE_IN')">
+        <img src="../customer/images/logo.png" class="tab-channel-logo-img" alt="Harvest Kitchen">
+        <span>Dine-In</span>
+        <span class="tab-count" id="countDineIn">0</span>
+      </button>
+
+      <!-- Zomato with Official Logo -->
+      <button class="channel-tab tab-zomato" data-channel="ZOMATO" onclick="filterByChannel('ZOMATO')">
+        <span class="brand-logo-icon zomato-icon">Z</span>
+        <span>Zomato</span>
+        <span class="tab-count" id="countZomato">0</span>
+      </button>
+
+      <!-- Swiggy with Official Logo -->
+      <button class="channel-tab tab-swiggy" data-channel="SWIGGY" onclick="filterByChannel('SWIGGY')">
+        <span class="brand-logo-icon swiggy-icon">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C8.69 2 6 4.69 6 8c0 4.5 6 12 6 12s6-7.5 6-12c0-3.31-2.69-6-6-6zm0 8.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 5.5 12 5.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        </span>
+        <span>Swiggy</span>
+        <span class="tab-count" id="countSwiggy">0</span>
+      </button>
+
+      <!-- Magicpin with Official Logo -->
+      <button class="channel-tab tab-magicpin" data-channel="MAGICPIN" onclick="filterByChannel('MAGICPIN')">
+        <span class="brand-logo-icon magicpin-icon">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2a6 6 0 0 0-6 6c0 4.5 6 12 6 12s6-7.5 6-12a6 6 0 0 0-6-6zm0 8.2a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4z"/></svg>
+        </span>
+        <span>Magicpin</span>
+        <span class="tab-count" id="countMagicpin">0</span>
+      </button>
+
+      <!-- Direct Website with Logo.png -->
+      <button class="channel-tab tab-direct" data-channel="DIRECT" onclick="filterByChannel('DIRECT')">
+        <img src="../customer/images/logo.png" class="tab-channel-logo-img" alt="Harvest Kitchen">
+        <span>Direct Website</span>
+        <span class="tab-count" id="countDirect">0</span>
+      </button>
+
+      <!-- Takeaway with Clean Vector Icon -->
+      <button class="channel-tab tab-takeaway" data-channel="TAKEAWAY" onclick="filterByChannel('TAKEAWAY')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span>Takeaway</span>
+        <span class="tab-count" id="countTakeaway">0</span>
+      </button>
+    </div>
+
+    <!-- Drag & Drop Help Hint -->
+    <div class="kds-drag-hint">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+      <span>Click card for details &amp; requests • Drag &amp; drop between columns</span>
+    </div>
+  </nav>
+
+  <!-- Kanban Board Layout with Drag-and-Drop Dropzones -->
+  <main class="kds-board">
+
+    <!-- Column 1: Incoming / Queued -->
+    <div class="kds-column col-incoming" data-status="PLACED" ondragover="onColumnDragOver(event)" ondragleave="onColumnDragLeave(event)" ondrop="onColumnDrop(event, 'PLACED')">
+      <div class="kds-col-header">
+        <div class="kds-col-title">
+          <span class="col-status-dot dot-blue"></span>
+          <span>Incoming Orders</span>
+        </div>
+        <div class="col-header-actions">
+          <button class="col-sound-test-btn" onclick="triggerSectionAlert('NEW_ORDER', 108, 'ZOMATO')" title="Preview Incoming Bell &amp; Voice">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          </button>
+          <span class="kds-count-badge badge-blue" id="countPlaced">0</span>
+        </div>
+      </div>
+      <div class="kds-ticket-list" id="listPlaced">
+        <div class="kds-empty-state">
+          <div class="empty-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+          </div>
+          <h4>No Incoming Orders</h4>
+          <p>New tickets from Zomato, Swiggy, Dine-In &amp; Direct will appear here</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 2: In Preparation -->
+    <div class="kds-column col-preparing" data-status="PREPARING" ondragover="onColumnDragOver(event)" ondragleave="onColumnDragLeave(event)" ondrop="onColumnDrop(event, 'PREPARING')">
+      <div class="kds-col-header">
+        <div class="kds-col-title">
+          <span class="col-status-dot dot-amber"></span>
+          <span>In Preparation</span>
+        </div>
+        <div class="col-header-actions">
+          <button class="col-sound-test-btn" onclick="triggerSectionAlert('START_COOKING', 106, 'DINE_IN', 'Table 4')" title="Preview Cooking Started Tone &amp; Voice">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          </button>
+          <span class="kds-count-badge badge-amber" id="countPreparing">0</span>
+        </div>
+      </div>
+      <div class="kds-ticket-list" id="listPreparing">
+        <div class="kds-empty-state">
+          <div class="empty-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+          </div>
+          <h4>Kitchen Is Clear</h4>
+          <p>Drag tickets here or click "Start Cooking" to begin</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 3: Ready for Dispatch -->
+    <div class="kds-column col-ready" data-status="READY" ondragover="onColumnDragOver(event)" ondragleave="onColumnDragLeave(event)" ondrop="onColumnDrop(event, 'READY')">
+      <div class="kds-col-header">
+        <div class="kds-col-title">
+          <span class="col-status-dot dot-green"></span>
+          <span>Ready for Pickup</span>
+        </div>
+        <div class="col-header-actions">
+          <button class="col-sound-test-btn" onclick="triggerSectionAlert('ORDER_READY', 104, 'SWIGGY')" title="Preview Service Ready Bell &amp; Voice">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          </button>
+          <span class="kds-count-badge badge-green" id="countReady">0</span>
+        </div>
+      </div>
+      <div class="kds-ticket-list" id="listReady">
+        <div class="kds-empty-state">
+          <div class="empty-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h4>No Orders Waiting</h4>
+          <p>Dishes ready for delivery rider or table service</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Live Toast Notification Container -->
+  <div id="kdsToastContainer" class="kds-toast-container"></div>
+
+  <!-- Order Details & Special Instructions Modal -->
+  <div id="orderDetailModal" class="kds-modal-backdrop" style="display: none;" onclick="closeOrderDetailModalOnBackdrop(event)">
+    <div class="kds-modal-card order-modal-card">
+      
+      <!-- Modal Header -->
+      <div class="kds-modal-head">
+        <div class="modal-title-wrap">
+          <div class="modal-order-badge" id="modalOrderId">#108</div>
+          <div id="modalOrderChannelBadge"></div>
+          <div id="modalOrderPriorityBadge"></div>
+        </div>
+        <div class="modal-head-right">
+          <div id="modalOrderTimer" class="kds-timer timer-normal"></div>
+          <button class="modal-close-btn" onclick="closeOrderDetailModal()">&times;</button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="kds-modal-body">
+
+        <!-- Special Request / Additional Note Alert Box -->
+        <div id="modalSpecialInstructionWrap" class="special-instruction-box">
+          <div class="special-inst-head">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <strong>Customer Special Request &amp; Cooking Instructions</strong>
+          </div>
+          <p id="modalSpecialInstructionText" class="special-inst-text"></p>
+        </div>
+
+        <!-- Customer & Order Meta Grid -->
+        <div class="order-meta-grid">
+          <div class="meta-item">
+            <span class="meta-label">Customer</span>
+            <strong id="modalCustomerName" class="meta-value">-</strong>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Contact</span>
+            <strong id="modalCustomerPhone" class="meta-value">-</strong>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Delivery / Table</span>
+            <strong id="modalCustomerAddress" class="meta-value">-</strong>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Order Placed At</span>
+            <strong id="modalOrderTime" class="meta-value">-</strong>
+          </div>
+        </div>
+
+        <!-- Items Checklist Section -->
+        <div class="modal-items-section">
+          <div class="items-section-head">
+            <span>Ordered Items &amp; Plating Checklist</span>
+            <span class="items-helper">Click item to toggle plated</span>
+          </div>
+          <div id="modalItemsList" class="modal-items-list"></div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer with Make Ready & Stage Actions -->
+      <div class="kds-modal-foot order-modal-foot">
+        <button class="btn btn-outline" onclick="closeOrderDetailModal()">Close</button>
+        <div id="modalActionContainer">
+          <!-- Dynamic Action Button: Start Cooking, Mark Ready, or Dispatch -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Sound & Voice Alert Configuration Modal -->
+  <div id="soundModal" class="kds-modal-backdrop" style="display: none;" onclick="closeSoundModalOnBackdrop(event)">
+    <div class="kds-modal-card">
+      <div class="kds-modal-head">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          </div>
+          <div>
+            <h3>Sound &amp; Voice Alert Settings</h3>
+            <p>Clear acoustic chimes + Natural speech announcements</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeSoundModal()">&times;</button>
+      </div>
+
+      <div class="kds-modal-body">
+        <!-- Master Sound Switch -->
+        <div class="setting-toggle-row">
+          <div>
+            <strong>Acoustic Bell Chimes</strong>
+            <p class="setting-desc">Crisp musical chimes for all stage changes</p>
+          </div>
+          <label class="switch-toggle">
+            <input type="checkbox" id="chkSoundMaster" onchange="toggleMasterSound(this.checked)" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Voice Announcement Switch -->
+        <div class="setting-toggle-row">
+          <div>
+            <strong>Voice Assistant Speech (TTS)</strong>
+            <p class="setting-desc">Speaks channel and order number aloud (e.g. "Zomato Order 1 0 8")</p>
+          </div>
+          <label class="switch-toggle">
+            <input type="checkbox" id="chkVoiceAnnounce" onchange="toggleVoiceAnnouncement(this.checked)" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- Voice Clarity & Accent Selector -->
+        <div class="voice-config-box">
+          <div class="voice-config-row">
+            <label for="selVoice"><strong>Select Voice Accent:</strong></label>
+            <select id="selVoice" class="voice-dropdown" onchange="onVoiceSelectChange(this.value)">
+              <option value="">Auto-Detect High-Clarity Voice</option>
+            </select>
+          </div>
+
+          <div class="voice-config-row" style="margin-top: 10px;">
+            <label for="rngVoiceSpeed"><strong>Speech Pace:</strong> <span id="lblSpeed">Normal (0.90×)</span></label>
+            <input type="range" min="0.7" max="1.15" step="0.05" value="0.9" id="rngVoiceSpeed" class="range-slider" oninput="onVoiceRateChange(this.value)">
+          </div>
+
+          <button class="btn-voice-test" onclick="testVoiceClarity()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <span>Play Voice Clarity Test ("Attention: Zomato Order 1 0 8")</span>
+          </button>
+        </div>
+
+        <!-- Section Audio Test Grid -->
+        <div class="sound-previews-section">
+          <div class="sound-preview-heading">Section Sound &amp; Voice Previews</div>
+          <div class="sound-grid">
+            
+            <div class="sound-card" onclick="triggerSectionAlert('NEW_ORDER', 108, 'ZOMATO')">
+              <div class="sound-card-icon blue-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+              </div>
+              <div class="sound-card-info">
+                <span class="sound-name">Incoming Order (Zomato)</span>
+                <span class="sound-type">Triple Chime + "Zomato Order 1 0 8"</span>
+              </div>
+              <button class="sound-play-chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Play</span>
+              </button>
+            </div>
+
+            <div class="sound-card" onclick="triggerSectionAlert('START_COOKING', 106, 'DINE_IN', 'Table 4')">
+              <div class="sound-card-icon amber-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              </div>
+              <div class="sound-card-info">
+                <span class="sound-name">Start Cooking (Dine-In)</span>
+                <span class="sound-type">Ascending Blip + "Dine In Table 4 Cooking"</span>
+              </div>
+              <button class="sound-play-chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Play</span>
+              </button>
+            </div>
+
+            <div class="sound-card" onclick="triggerSectionAlert('ORDER_READY', 104, 'SWIGGY')">
+              <div class="sound-card-icon green-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <div class="sound-card-info">
+                <span class="sound-name">Ready for Pickup (Swiggy)</span>
+                <span class="sound-type">Service Bell Chime + "Swiggy Order 1 0 4 Ready"</span>
+              </div>
+              <button class="sound-play-chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Play</span>
+              </button>
+            </div>
+
+            <div class="sound-card" onclick="triggerSectionAlert('DISPATCHED', 105, 'MAGICPIN')">
+              <div class="sound-card-icon red-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/></svg>
+              </div>
+              <div class="sound-card-info">
+                <span class="sound-name">Order Dispatched (Magicpin)</span>
+                <span class="sound-type">Delivery Swoosh + "Magicpin Order 1 0 5 Dispatched"</span>
+              </div>
+              <button class="sound-play-chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Play</span>
+              </button>
+            </div>
+
+            <div class="sound-card alert-card" onclick="triggerSectionAlert('OVERDUE_ALERT', 106, 'DINE_IN', 'Table 4')">
+              <div class="sound-card-icon red-pulse-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div class="sound-card-info">
+                <span class="sound-name">Overdue / Priority Alert</span>
+                <span class="sound-type">Urgency Pulse + "Attention: Dine In Order 1 0 6 Overdue"</span>
+              </div>
+              <button class="sound-play-chip alert-chip">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Play</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="kds-modal-foot">
+        <button class="btn btn-primary" onclick="closeSoundModal()">Done &amp; Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/kitchen.js?v=icons_brand_v11"></script>
+</body>
+</html>

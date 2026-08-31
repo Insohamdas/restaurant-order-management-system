@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart | Harvest Kitchen</title>
+  <link rel="icon" type="image/png" href="images/logo-icon.png" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" href="images/logo.png" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="css/style.css?v=2026_08_31_v9">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo">
+        <img src="images/logo2.svg" alt="Harvest Kitchen" class="brand-logo-img">
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li>
+          <a href="cart.html" class="cart-link active">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 4px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Cart <span class="cart-badge" id="cartCount">0</span>
+          </a>
+        </li>
+        <li><a href="track-order.html">Track Order</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Shopping Cart</h1>
+          <p class="section-subtitle">Review your selected dishes before placing order</p>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="cartEmptyState" class="status-card" style="display: none;">
+        <div class="feature-icon" style="margin-bottom: 15px;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </div>
+        <h2>Your cart is currently empty</h2>
+        <p style="color: var(--text-muted); margin: 10px 0 25px;">Looks like you haven't added any dishes yet.</p>
+        <a href="menu.html" class="btn btn-primary">Browse Menu &amp; Order</a>
+      </div>
+
+      <!-- Cart Content Layout -->
+      <div id="cartContentSection" class="cart-layout">
+        <!-- Left: Items list & Upselling -->
+        <div>
+          <!-- Free Delivery Progress Bar -->
+          <div id="freeDeliveryBar" class="free-del-container" style="display: none;">
+            <div class="free-del-info">
+              <span id="freeDelMsg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/></svg>
+                Add ₹120 more for FREE Delivery!
+              </span>
+              <span id="freeDelPercent" style="font-size: 0.8rem; color: #df1f26;">80%</span>
+            </div>
+            <div class="progress-track">
+              <div id="freeDelProgress" class="progress-fill" style="width: 80%;"></div>
+            </div>
+          </div>
+
+          <div class="cart-table-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-light);">
+              <h3 style="font-size: 1.1rem; color: var(--secondary);">Order Items</h3>
+              <button id="btnClearCart" class="btn btn-secondary btn-sm" style="color: var(--danger);">Clear Cart</button>
+            </div>
+
+            <div id="cartItemsList">
+              <!-- Dynamically populated via cart-page.js -->
+            </div>
+          </div>
+
+          <!-- Smart Upselling Section ("Complete Your Meal") -->
+          <div id="upsellSection" class="upsell-section" style="display: none;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: #181615;" id="upsellTitle">Complete Your Meal</h3>
+                <p style="font-size: 0.85rem; color: #64748b;" id="upsellSubtitle">Popular drinks & sides paired by our chef</p>
+              </div>
+            </div>
+            <div class="upsell-grid" id="upsellGrid">
+              <!-- Dynamically rendered via cart-page.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Summary Card -->
+        <div class="order-summary-card">
+          <h3 class="summary-title">Bill Summary</h3>
+          
+          <div class="summary-row">
+            <span>Item Subtotal</span>
+            <span id="cartSubtotal">₹0</span>
+          </div>
+          
+          <div class="summary-row">
+            <span>Delivery Fee</span>
+            <span id="cartDeliveryFee">₹40</span>
+          </div>
+
+          <div class="summary-row total-row">
+            <span>Total Payable</span>
+            <span id="cartGrandTotal">₹0</span>
+          </div>
+
+          <div style="margin-top: 25px;">
+            <a href="checkout.html" class="btn btn-primary btn-block">Proceed to Checkout →</a>
+          </div>
+
+          <div style="margin-top: 12px; text-align: center;">
+            <a href="menu.html" class="btn btn-secondary btn-sm btn-block">Add More Items</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="footer-brand-section">
+        <img src="images/logo-full.png" alt="Harvest Kitchen" class="footer-logo">
+        <p class="footer-tagline">
+          Delicious Food, Delivered Fresh. Artisan recipes prepared with organic, farm-sourced ingredients.
+        </p>
+      </div>
+
+      <div class="footer-links-row">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Explore Menu</a>
+        <a href="cart.html">My Cart</a>
+        <a href="track-order.html">Track Order</a>
+        <a href="account.html">Account &amp; Offers</a>
+      </div>
+
+      <div class="footer-divider"></div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Harvest Kitchen. All rights reserved.</div>
+        <div class="made-with-love">
+          <span>Made with love</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#df1f26" stroke="#df1f26" stroke-width="1.5"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <span>for food lovers</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/common.js?v=2026_08_31_v7"></script>
+  <script src="js/api.js?v=2026_08_31_v7"></script>
+  <script src="js/cart.js?v=2026_08_31_v7"></script>
+  <script src="js/cart-page.js?v=2026_08_31_v7"></script>
+</body>
+</html>
+

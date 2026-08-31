@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Analytics &amp; Intelligence | Harvest Kitchen Admin</title>
+  <link rel="icon" type="image/png" href="images/logo-icon.png" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" href="images/logo.png" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="css/admin.css?v=2026_08_31_v8">
+  <style>
+    .analytics-controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      background: #ffffff;
+      padding: 14px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .period-btn-group {
+      display: inline-flex;
+      background: #f8fafc;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      gap: 4px;
+    }
+    .period-btn {
+      border: none;
+      background: transparent;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .period-btn:hover {
+      color: #181615;
+    }
+    .period-btn.active {
+      background: #df1f26;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(223, 31, 38, 0.25);
+    }
+    .analytics-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      margin-bottom: 26px;
+    }
+    @media (max-width: 1024px) {
+      .analytics-grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+    .analytics-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .analytics-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .analytics-card-title {
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: #181615;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chart-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      font-size: 0.88rem;
+    }
+    .chart-bar-label {
+      width: 120px;
+      font-weight: 700;
+      color: #181615;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 0;
+    }
+    .chart-bar-track {
+      flex: 1;
+      height: 14px;
+      background: #f1f5f9;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    .chart-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444, #df1f26);
+      border-radius: 999px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .chart-bar-fill-blue {
+      background: linear-gradient(90deg, #38bdf8, #0284c7);
+    }
+    .chart-bar-val {
+      width: 110px;
+      text-align: right;
+      font-weight: 800;
+      color: #181615;
+      flex-shrink: 0;
+    }
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-size: 0.82rem;
+      font-weight: 800;
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .rank-1 { background: #fef08a; color: #854d0e; box-shadow: 0 2px 5px rgba(234, 179, 8, 0.3); }
+    .rank-2 { background: #e2e8f0; color: #334155; }
+    .rank-3 { background: #fed7aa; color: #9a3412; }
+    
+    /* Live Sync Indicator */
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0fdf4;
+      color: #16a34a;
+      border: 1px solid #bbf7d0;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: #16a34a;
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <img src="images/logo-icon.png" alt="Harvest Kitchen" class="admin-logo-img">
+        <span>Harvest Kitchen</span>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="dashboard.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> <span>Dashboard</span></a></li>
+        <li><a href="analytics.html" class="active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> <span>Analytics</span></a></li>
+        <li><a href="order-management.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> <span>Orders</span></a></li>
+        <li><a href="menu-management.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3v7"/></svg> <span>Menu &amp; Stock</span></a></li>
+        <li><a href="coupons.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg> <span>Promo Coupons</span></a></li>
+        <li><a href="offers.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span>Flash Sales</span></a></li>
+        <li><a href="settings.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> <span>Store Settings</span></a></li>
+        <li style="margin-top: 10px; border-top: 1px solid var(--sidebar-border); padding-top: 8px;"><a href="../kitchen/index.html" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> <span>Kitchen Display (KDS)</span></a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <div style="font-size: 0.75rem; color: #71717a;">Harvest Kitchen OS v2.0</div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+      
+      <!-- Top Header -->
+      <header class="admin-header">
+        <div>
+          <h1 class="admin-page-title">Business Analytics &amp; Intelligence</h1>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 2px;">Comprehensive revenue breakdown, peak hourly velocity, and product sales insights.</p>
+        </div>
+        <div class="admin-user-profile" style="display: flex; gap: 10px; align-items: center;">
+          <button onclick="refreshAllAnalytics()" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Refresh Data
+          </button>
+          <a href="../customer/index.html" target="_blank" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+            View Customer Store
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </header>
+
+      <!-- Body Content -->
+      <main class="admin-body">
+        
+        <!-- Controls & Filter Bar -->
+        <div class="analytics-controls-bar">
+          <div class="period-btn-group">
+            <button class="period-btn active" onclick="switchPeriod('LAST_30_DAYS', this)">Last 30 Days</button>
+            <button class="period-btn" onclick="switchPeriod('THIS_MONTH', this)">This Month</button>
+            <button class="period-btn" onclick="switchPeriod('LAST_7_DAYS', this)">Last 7 Days</button>
+            <button class="period-btn" onclick="switchPeriod('TODAY', this)">Today</button>
+          </div>
+          <div class="live-pill">
+            <span class="live-dot"></span>
+            <span>Real-time Live Sync with MySQL DB</span>
+          </div>
+        </div>
+
+        <!-- Key Metrics Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper stat-icon-orange">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+              <div class="stat-info-label">Today's Net Revenue</div>
+              <div class="stat-info-val" id="kpiTodayRev">₹0</div>
+              <div style="font-size: 0.78rem; color: #64748b; margin-top: 4px;" id="kpiTodayOrders">0 orders placed today</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper stat-icon-blue">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div>
+              <div class="stat-info-label">Total Revenue (Selected Period)</div>
+              <div class="stat-info-val" id="kpiMonthRev">₹0</div>
+              <div style="font-size: 0.78rem; color: #64748b; margin-top: 4px;" id="kpiTotalOrders">4 total completed orders</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper stat-icon-green">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m16 10-4 4-2-2"/></svg>
+            </div>
+            <div>
+              <div class="stat-info-label">Average Order Value (AOV)</div>
+              <div class="stat-info-val" id="kpiAov">₹0</div>
+              <div style="font-size: 0.78rem; color: #64748b; margin-top: 4px;">Per completed order</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper stat-icon-amber">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <div class="stat-info-label">Customer Repeat Rate</div>
+              <div class="stat-info-val" id="kpiRepeatRate">0%</div>
+              <div style="font-size: 0.78rem; color: #64748b; margin-top: 4px;" id="kpiCustomerCounts">0 repeat of 4 diners</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 Column Analytics: Category Revenue & Peak Hours -->
+        <div class="analytics-grid-2">
+          
+          <!-- Category Revenue Breakdown -->
+          <div class="analytics-card">
+            <div class="analytics-card-header">
+              <h3 class="analytics-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#df1f26" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                Category Revenue Share
+              </h3>
+              <span style="font-size: 0.8rem; color: #64748b; font-weight: 700;">By Volume &amp; Sales</span>
+            </div>
+            <div id="categoryChartList">
+              <p style="color: var(--text-muted); text-align: center; padding: 20px;">Loading category metrics...</p>
+            </div>
+          </div>
+
+          <!-- Peak Order Hours Breakdown -->
+          <div class="analytics-card">
+            <div class="analytics-card-header">
+              <h3 class="analytics-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Peak Ordering Hours (24h Velocity)
+              </h3>
+              <span style="font-size: 0.8rem; color: #64748b; font-weight: 700;">Kitchen Demand Curve</span>
+            </div>
+            <div id="peakHoursList" style="max-height: 280px; overflow-y: auto; padding-right: 6px;">
+              <p style="color: var(--text-muted); text-align: center; padding: 20px;">Loading peak hour metrics...</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Best-Selling Dishes Table -->
+        <div class="card" style="margin-bottom: 26px;">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#df1f26" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Top Selling Dishes &amp; Product Performance Leaderboard
+              </h2>
+              <p style="font-size: 0.84rem; color: #64748b; margin-top: 2px;">Item velocity ranked by units sold and gross revenues generated.</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px; text-align: center;">Rank</th>
+                  <th style="min-width: 180px;">Dish Name</th>
+                  <th style="min-width: 120px;">Category</th>
+                  <th style="min-width: 130px;">Units Sold</th>
+                  <th style="min-width: 160px;">Gross Revenue</th>
+                  <th style="min-width: 140px;">Avg Price / Item</th>
+                </tr>
+              </thead>
+              <tbody id="topSellingTableBody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading product sales...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Cancellation Analytics & Coupon ROI -->
+        <div class="analytics-grid-2">
+          
+          <!-- Order Cancellation Diagnostics -->
+          <div class="analytics-card">
+            <div class="analytics-card-header">
+              <h3 class="analytics-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                Order Cancellation &amp; Health
+              </h3>
+              <span class="badge" style="background: #dcfce7; color: #15803d; font-weight: 800;">100% Fulfillment</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; padding: 14px; background: #f8fafc; border-radius: 8px;">
+              <div>
+                <div style="font-size: 0.78rem; color: #64748b; text-transform: uppercase; font-weight: 700;">Cancellation Rate</div>
+                <div style="font-size: 1.5rem; font-weight: 900; color: #181615;" id="cancelRateVal">0.0%</div>
+              </div>
+              <div>
+                <div style="font-size: 0.78rem; color: #64748b; text-transform: uppercase; font-weight: 700;">Lost Revenue</div>
+                <div style="font-size: 1.5rem; font-weight: 900; color: #16a34a;" id="cancelLostRevVal">₹0</div>
+              </div>
+            </div>
+
+            <div style="font-size: 0.82rem; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase;">Reasons Breakdown:</div>
+            <div id="cancelReasonsList">
+              <p style="color: var(--text-muted); font-size: 0.85rem;">No cancellations recorded.</p>
+            </div>
+          </div>
+
+          <!-- Coupon Campaign Performance -->
+          <div class="analytics-card">
+            <div class="analytics-card-header">
+              <h3 class="analytics-card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#df1f26" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                Coupon Campaign Performance
+              </h3>
+              <span style="font-size: 0.8rem; color: #64748b; font-weight: 700;">Marketing ROI</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Coupon Code</th>
+                    <th>Times Used</th>
+                    <th>Discount Given</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="couponStatsTableBody">
+                  <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 16px;">Loading coupons...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="js/analytics.js?v=2026_08_31_v9"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "harvest-kitchen-restaurant-system",
+  "version": "1.0.0",
+  "description": "Harvest Kitchen - Restaurant Food Ordering System",
+  "scripts": {
+    "dev": "python3 -m http.server 5500",
+    "serve": "python3 -m http.server 5500",
+    "start": "python3 -m http.server 5500",
+    "backend": "cd backend && mvn spring-boot:run"
+  },
+  "keywords": [
+    "restaurant",
+    "food-ordering",
+    "spring-boot",
+    "html5"
+  ],
+  "author": "",
+  "license": "ISC"
+}

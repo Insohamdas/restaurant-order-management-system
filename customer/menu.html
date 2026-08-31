@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu | Harvest Kitchen</title>
+  <link rel="icon" type="image/png" href="images/logo-icon.png" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" href="images/logo.png" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="css/style.css?v=2026_08_31_v9">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="brand-logo">
+        <img src="images/logo2.svg" alt="Harvest Kitchen" class="brand-logo-img">
+      </a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="menu.html" class="active">Menu</a></li>
+        <li>
+          <a href="cart.html" class="cart-link">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 4px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Cart <span class="cart-badge" id="cartCount">0</span>
+          </a>
+        </li>
+        <li><a href="track-order.html">Track Order</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="container">
+
+      <!-- Header & Search Bar -->
+      <div class="section-header" style="flex-wrap: wrap; gap: 20px; align-items: center; margin-bottom: 25px;">
+        <div>
+          <h1 class="section-title">Explore Our Menu</h1>
+          <p class="section-subtitle">Discover handcrafted dishes prepared fresh to order</p>
+        </div>
+        <div style="min-width: 260px;">
+          <input 
+            type="text" 
+            id="foodSearchInput" 
+            class="form-control" 
+            placeholder="Search dishes, ingredients..." 
+            style="border-radius: var(--radius-full);"
+          >
+        </div>
+      </div>
+
+      <!-- Category Filter Tabs -->
+      <div class="category-filter-bar">
+        <button class="filter-btn active" data-category="All">All Items</button>
+        <button class="filter-btn" data-category="Combos" style="background: #fef2f2; color: #df1f26; font-weight: 700; border-color: #fca5a5;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          Combos & Bundles
+        </button>
+        <button class="filter-btn" data-category="Pizza">Pizza</button>
+        <button class="filter-btn" data-category="Burger">Burger</button>
+        <button class="filter-btn" data-category="Main Course">Main Course</button>
+        <button class="filter-btn" data-category="Appetizers">Appetizers</button>
+        <button class="filter-btn" data-category="Drinks">Drinks</button>
+        <button class="filter-btn" data-category="Dessert">Dessert</button>
+      </div>
+
+      <!-- Food Grid -->
+      <div class="food-grid" id="foodGrid">
+        <!-- Dynamically rendered via menu.js -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="footer-brand-section">
+        <img src="images/logo-full.png" alt="Harvest Kitchen" class="footer-logo">
+        <p class="footer-tagline">
+          Delicious Food, Delivered Fresh. Artisan recipes prepared with organic, farm-sourced ingredients.
+        </p>
+      </div>
+
+      <div class="footer-links-row">
+        <a href="index.html">Home</a>
+        <a href="menu.html">Explore Menu</a>
+        <a href="cart.html">My Cart</a>
+        <a href="track-order.html">Track Order</a>
+        <a href="account.html">Account &amp; Offers</a>
+      </div>
+
+      <div class="footer-divider"></div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Harvest Kitchen. All rights reserved.</div>
+        <div class="made-with-love">
+          <span>Made with love</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#df1f26" stroke="#df1f26" stroke-width="1.5"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <span>for food lovers</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/common.js?v=2026_08_31_v7"></script>
+  <script src="js/api.js?v=2026_08_31_v7"></script>
+  <script src="js/cart.js?v=2026_08_31_v7"></script>
+  <script src="js/menu.js?v=2026_08_31_v7"></script>
+</body>
+</html>
+

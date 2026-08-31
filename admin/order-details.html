@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details | Harvest Kitchen Admin</title>
+  <link rel="icon" type="image/png" href="images/logo-icon.png" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" href="images/logo.png" media="(prefers-color-scheme: light)">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <img src="images/logo-icon.png" alt="Harvest Kitchen" class="admin-logo-img">
+        <span>Harvest Kitchen</span>
+      </div>
+      <ul class="sidebar-menu">
+        <li><a href="dashboard.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> <span>Dashboard</span></a></li>
+        <li><a href="analytics.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> <span>Analytics</span></a></li>
+        <li><a href="order-management.html" class="active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg> <span>Orders</span></a></li>
+        <li><a href="menu-management.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3v7"/></svg> <span>Menu &amp; Stock</span></a></li>
+        <li><a href="coupons.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg> <span>Promo Coupons</span></a></li>
+        <li><a href="offers.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> <span>Flash Sales</span></a></li>
+        <li><a href="settings.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> <span>Store Settings</span></a></li>
+        <li style="margin-top: 10px; border-top: 1px solid var(--sidebar-border); padding-top: 8px;"><a href="../kitchen/index.html" target="_blank"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg> <span>Kitchen Display (KDS)</span></a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="#" id="btnLogout" style="color: #f87171; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; margin-bottom: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg> <span>Logout</span>
+        </a>
+        <div style="font-size: 0.72rem; color: #71717a; display: flex; align-items: center; gap: 4px;">Made in Kolkata with <svg width="12" height="12" viewBox="0 0 24 24" fill="#df1f26" stroke="#df1f26"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+      
+      <!-- Top Header -->
+      <header class="admin-header">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <a href="order-management.html" class="btn btn-secondary btn-sm">← Back to Orders</a>
+          <h1 class="admin-page-title" style="margin-bottom: 0;">Order Processing</h1>
+        </div>
+      </header>
+
+      <!-- Body Content -->
+      <main class="admin-body">
+        
+        <div id="orderDetailsLoading" style="text-align: center; padding: 40px; color: var(--text-muted);">
+          Loading order details...
+        </div>
+
+        <div id="orderDetailsContent" style="display: none;">
+          
+          <div id="statusUpdateAlert" class="alert alert-success" style="display: none;"></div>
+
+          <!-- Top Status and Quick Action Bar -->
+          <div class="card" style="margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+              <div>
+                <span style="font-size: 0.85rem; color: var(--text-muted); display: block;">Order Reference</span>
+                <span id="orderIdDisplay" style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">#----</span>
+                <span id="orderCurrentStatusBadge" class="badge-status" style="margin-left: 10px;">PLACED</span>
+              </div>
+
+              <!-- Status Changer Form -->
+              <form id="updateStatusForm" style="display: flex; align-items: center; gap: 10px;">
+                <label for="statusSelect" style="font-size: 0.9rem; font-weight: 600;">Change Status:</label>
+                <select id="statusSelect" class="form-control" style="width: auto; min-width: 170px;">
+                  <option value="PLACED">Placed</option>
+                  <option value="CONFIRMED">Confirmed</option>
+                  <option value="PREPARING">Preparing</option>
+                  <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+                <button type="submit" id="btnUpdateStatus" class="btn btn-primary">
+                  Update Status
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 340px; gap: 25px; align-items: start;">
+            
+            <!-- Left: Order Items Table -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Ordered Items</h3>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Image</th>
+                      <th>Food Name</th>
+                      <th>Unit Price</th>
+                      <th>Qty</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody id="orderItemsTableBody">
+                    <!-- Dynamically populated via order-details.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right: Customer Info & Bill Breakdown -->
+            <div>
+              <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                  <h3 class="card-title">Customer Information</h3>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                  <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Customer Name</span>
+                  <strong id="customerName" style="font-size: 1rem;">-</strong>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                  <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Phone Number</span>
+                  <strong id="customerPhone" style="font-size: 0.95rem;">-</strong>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                  <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Delivery Address</span>
+                  <span id="customerAddress" style="font-size: 0.9rem; color: var(--text-main);">-</span>
+                </div>
+
+                <div>
+                  <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Order Timestamp</span>
+                  <span id="orderDate" style="font-size: 0.85rem; color: var(--text-muted);">-</span>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Billing Summary</h3>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem; color: var(--text-muted);">
+                  <span>Food Subtotal</span>
+                  <span id="orderSubtotal">₹0</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.95rem; color: var(--text-muted);">
+                  <span>Delivery Fee</span>
+                  <span id="orderDeliveryFee">₹40</span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); font-size: 1.15rem; font-weight: 800; color: var(--text-main);">
+                  <span>Grand Total</span>
+                  <span id="orderTotalAmount">₹0</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/order-details.js"></script>
+</body>
+</html>
