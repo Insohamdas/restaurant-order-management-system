@@ -4,7 +4,10 @@
  * Vector Icons & Official Brand Logos, Order Details Modal, Drag & Drop & Audio Alerts
  */
 
-const API_BASE = 'http://localhost:8080/api';
+// Auto-detect environment: use Railway backend in production, localhost in dev
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:8080/api'
+  : 'https://YOUR_RAILWAY_BACKEND_URL/api';
 
 // State
 let kitchenOrders = [];

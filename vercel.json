@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/admin/(.*)", "dest": "/admin/$1" },
+    { "src": "/customer/(.*)", "dest": "/customer/$1" },
+    { "src": "/kitchen/(.*)", "dest": "/kitchen/$1" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
