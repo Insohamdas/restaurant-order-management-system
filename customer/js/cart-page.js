@@ -151,8 +151,13 @@ async function loadCartUpsells(cart) {
   if (!section || !grid) return;
 
   try {
+    const baseUrl = (typeof API_BASE !== 'undefined') ? API_BASE : (
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:8080/api'
+        : 'https://restaurant-order-management-system-cxv5.onrender.com/api'
+    );
     const foodIds = cart.map(i => (i.foodId || i.id)).filter(Boolean).join(',');
-    const res = await fetch(`http://localhost:8080/api/recommendations/upsell?foodIds=${foodIds}`);
+    const res = await fetch(`${baseUrl}/recommendations/upsell?foodIds=${foodIds}`);
     if (!res.ok) return;
 
     const data = await res.json();

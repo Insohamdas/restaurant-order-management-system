@@ -3,7 +3,10 @@
  * Modern, Lightweight ES6 Vanilla JS
  */
 
-const API_BASE = 'http://localhost:8080/api';
+// Auto-detect environment: use Render backend in production, localhost in dev
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:8080/api'
+  : 'https://restaurant-order-management-system-cxv5.onrender.com/api';
 
 // Format currency
 function formatCurrency(amount) {

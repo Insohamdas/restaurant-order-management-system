@@ -207,7 +207,7 @@ function startLiveClock() {
 async function loadKitchenOrders() {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const res = await fetch(`${API_BASE}/orders/kitchen`, { signal: controller.signal });
     clearTimeout(timeoutId);

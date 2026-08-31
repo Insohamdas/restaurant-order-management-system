@@ -13,7 +13,12 @@ let BUSINESS_SETTINGS = {
 // Fetch dynamic settings from API
 async function loadBusinessSettings() {
   try {
-    const res = await fetch('http://localhost:8080/api/settings');
+    const baseUrl = (typeof API_BASE !== 'undefined') ? API_BASE : (
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:8080/api'
+        : 'https://restaurant-order-management-system-cxv5.onrender.com/api'
+    );
+    const res = await fetch(`${baseUrl}/settings`);
     if (res.ok) {
       BUSINESS_SETTINGS = await res.json();
     }

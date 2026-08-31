@@ -5,6 +5,10 @@
 let allFoodItems = [];
 let editingFoodId = null;
 
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:8080/api'
+  : 'https://restaurant-order-management-system-cxv5.onrender.com/api';
+
 document.addEventListener('DOMContentLoaded', () => {
   AuthService.requireAuth();
 
@@ -34,7 +38,7 @@ async function loadMenuManagement() {
   `;
 
   try {
-    const res = await fetch('http://localhost:8080/api/foods');
+    const res = await fetch(`${API_BASE}/foods`);
     if (!res.ok) throw new Error('Failed to load foods');
     allFoodItems = await res.json();
     renderMenuTable(allFoodItems);
@@ -216,13 +220,13 @@ function initFormListeners() {
 
       let res;
       if (editingFoodId) {
-        res = await fetch(`http://localhost:8080/api/foods/${editingFoodId}`, {
+        res = await fetch(`${API_BASE}/foods/${editingFoodId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
       } else {
-        res = await fetch('http://localhost:8080/api/foods', {
+        res = await fetch(`${API_BASE}/foods`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -250,7 +254,7 @@ function initFormListeners() {
 async function confirmDeleteFood(foodId, foodName) {
   if (confirm(`Are you sure you want to delete "${foodName}"? This action cannot be undone.`)) {
     try {
-      const res = await fetch(`http://localhost:8080/api/foods/${foodId}`, {
+      const res = await fetch(`${API_BASE}/foods/${foodId}`, {
         method: 'DELETE'
       });
       if (!res.ok) throw new Error('Failed to delete food item');

@@ -17,10 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
   checkLowStock();
 });
 
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:8080/api'
+  : 'https://restaurant-order-management-system-cxv5.onrender.com/api';
+
 async function loadDashboard() {
   try {
     // 1. Fetch Analytics & Stats
-    const res = await fetch('http://localhost:8080/api/analytics/summary');
+    const res = await fetch(`${API_BASE}/analytics/summary`);
     if (res.ok) {
       const summary = await res.json();
       const revEl = document.getElementById('statTodayRevenue');
@@ -31,7 +35,7 @@ async function loadDashboard() {
       if (pendingEl) pendingEl.textContent = summary.pendingOrders || 0;
     }
 
-    const foodsRes = await fetch('http://localhost:8080/api/foods');
+    const foodsRes = await fetch(`${API_BASE}/foods`);
     if (foodsRes.ok) {
       const foods = await foodsRes.json();
       const foodsEl = document.getElementById('statTotalFoods');
@@ -39,7 +43,7 @@ async function loadDashboard() {
     }
 
     // 2. Fetch Recent Orders
-    const ordersRes = await fetch('http://localhost:8080/api/orders');
+    const ordersRes = await fetch(`${API_BASE}/orders`);
     if (ordersRes.ok) {
       const orders = await ordersRes.json();
       renderRecentOrders(orders.slice(0, 6));
@@ -52,7 +56,7 @@ async function loadDashboard() {
 
 async function checkLowStock() {
   try {
-    const res = await fetch('http://localhost:8080/api/inventory/low-stock');
+    const res = await fetch(`${API_BASE}/inventory/low-stock`);
     if (!res.ok) return;
     const lowStockItems = await res.json();
 
