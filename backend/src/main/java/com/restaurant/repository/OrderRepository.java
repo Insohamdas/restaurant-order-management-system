@@ -14,13 +14,17 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.foodItem ORDER BY o.createdAt DESC")
     List<Order> findAllByOrderByCreatedAtDesc();
 
-    List<Order> findByPhoneOrderByCreatedAtDesc(String phone);
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.foodItem WHERE o.phone = :phone ORDER BY o.createdAt DESC")
+    List<Order> findByPhoneOrderByCreatedAtDesc(@Param("phone") String phone);
 
-    List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.foodItem WHERE o.userId = :userId ORDER BY o.createdAt DESC")
+    List<Order> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
-    List<Order> findByStatusInOrderByCreatedAtAsc(Collection<OrderStatus> statuses);
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.foodItem WHERE o.status IN :statuses ORDER BY o.createdAt ASC")
+    List<Order> findByStatusInOrderByCreatedAtAsc(@Param("statuses") Collection<OrderStatus> statuses);
 
     List<Order> findByCreatedAtBetweenOrderByCreatedAtDesc(LocalDateTime start, LocalDateTime end);
 

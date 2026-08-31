@@ -20,5 +20,5 @@ COPY --from=build /app/target/restaurant-backend-1.0.0.jar app.jar
 # Expose the port Render will use (via $PORT env variable)
 EXPOSE 8080
 
-# Use -Xmx400m to stay within Render's 512MB free tier RAM limit
-ENTRYPOINT ["java", "-Xmx400m", "-jar", "app.jar"]
+# JVM memory & performance optimization for Render 512MB RAM container
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:+UseG1GC", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
