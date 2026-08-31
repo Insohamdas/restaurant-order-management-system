@@ -52,10 +52,92 @@ function saveCart(cart) {
 function updateCartBadge() {
   const cart = getCart();
   const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-  const badge = document.getElementById('cartCount');
-  if (badge) {
-    badge.textContent = count;
+  const total = cart.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0);
+
+  // Update all cart badges across desktop and mobile
+  document.querySelectorAll('#cartCount, .cart-badge, #mobileCartBadge').forEach(el => {
+    el.textContent = count;
+  });
+
+  updateFloatingCartBar(count, total);
+}
+
+// Mobile Floating Cart Bar (for fast checkout on mobile screens)
+function updateFloatingCartBar(count, total) {
+  const isMenuOrHome = window.location.pathname.endsWith('menu.html') || 
+                       window.location.pathname.endsWith('index.html') || 
+                       window.location.pathname.endsWith('/') || 
+                       window.location.pathname.endsWith('/customer/');
+  
+  if (!isMenuOrHome) return;
+
+  let bar = document.getElementById('mobileFloatingCart');
+  if (count <= 0) {
+    if (bar) bar.style.display = 'none';
+    return;
   }
+
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'mobileFloatingCart';
+    bar.className = 'mobile-floating-cart';
+    document.body.appendChild(bar);
+  }
+
+  bar.style.display = 'flex';
+  bar.innerHTML = `
+    <div class="m-cart-info">
+      <span class="m-cart-qty">${count} ${count === 1 ? 'ITEM' : 'ITEMS'}</span>
+      <span class="m-cart-divider">•</span>
+      <span class="m-cart-total">${formatCurrency(total)}</span>
+    </div>
+    <a href="cart.html" class="m-cart-cta">
+      <span>View Cart</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  `;
+}
+
+// Native Mobile Bottom Navigation Bar
+function initMobileBottomNav() {
+  if (document.querySelector('.mobile-bottom-nav')) return;
+
+  const currentPath = window.location.pathname;
+  const isHome = currentPath.endsWith('index.html') || currentPath.endsWith('/customer/') || currentPath.endsWith('/');
+  const isMenu = currentPath.endsWith('menu.html');
+  const isCart = currentPath.endsWith('cart.html') || currentPath.endsWith('checkout.html');
+  const isTrack = currentPath.endsWith('track-order.html') || currentPath.endsWith('order-success.html');
+  const isAccount = currentPath.endsWith('account.html');
+
+  const nav = document.createElement('nav');
+  nav.className = 'mobile-bottom-nav';
+  nav.innerHTML = `
+    <a href="index.html" class="m-nav-item ${isHome ? 'active' : ''}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </a>
+    <a href="menu.html" class="m-nav-item ${isMenu ? 'active' : ''}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+      <span>Menu</span>
+    </a>
+    <a href="cart.html" class="m-nav-item ${isCart ? 'active' : ''}">
+      <div class="m-nav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="m-cart-badge" id="mobileCartBadge">0</span>
+      </div>
+      <span>Cart</span>
+    </a>
+    <a href="track-order.html" class="m-nav-item ${isTrack ? 'active' : ''}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>Track</span>
+    </a>
+    <a href="account.html" class="m-nav-item ${isAccount ? 'active' : ''}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Account</span>
+    </a>
+  `;
+
+  document.body.appendChild(nav);
 }
 
 // Add Item to Cart
@@ -85,7 +167,7 @@ function showToast(message, type = 'success') {
     toast = document.createElement('div');
     toast.id = 'hk-toast';
     toast.style.position = 'fixed';
-    toast.style.bottom = '24px';
+    toast.style.bottom = '80px';
     toast.style.left = '50%';
     toast.style.transform = 'translateX(-50%)';
     toast.style.background = '#181615';
@@ -117,8 +199,33 @@ function showToast(message, type = 'success') {
   }, 2500);
 }
 
+function updateNavbarAuth() {
+  const user = getCurrentUser();
+  const accountLinks = document.querySelectorAll('a[href="account.html"]');
+  accountLinks.forEach(link => {
+    if (user && user.name) {
+      const firstName = user.name.split(' ')[0];
+      link.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${firstName}`;
+    }
+  });
+}
+
+async function fetchAndDisplayActiveOffer() {
+  try {
+    const res = await fetch(`${API_BASE}/offers/active`);
+    if (!res.ok) return;
+    const offers = await res.json();
+    if (offers && offers.length > 0) {
+      // Optional announcement banner
+    }
+  } catch (e) {
+    // Ignore quietly
+  }
+}
+
 // Update Navbar Auth & Active Special Offer
 async function initCommonHeader() {
+  initMobileBottomNav();
   updateCartBadge();
   updateNavbarAuth();
   fetchAndDisplayActiveOffer();

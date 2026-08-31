@@ -138,11 +138,16 @@ const CartService = {
 
   updateCartBadge() {
     const count = this.getCartCount();
-    const badges = document.querySelectorAll('.cart-badge, #cartCount');
+    const subtotal = this.calculateSubtotal();
+    const badges = document.querySelectorAll('.cart-badge, #cartCount, #mobileCartBadge');
     badges.forEach(badge => {
       badge.textContent = count;
-      badge.style.display = count > 0 ? 'inline-block' : 'none';
+      badge.style.display = count > 0 ? 'inline-flex' : 'none';
     });
+
+    if (typeof updateFloatingCartBar === 'function') {
+      updateFloatingCartBar(count, subtotal);
+    }
   },
 
   // Sync interactive quantity steppers across all cards currently on screen
