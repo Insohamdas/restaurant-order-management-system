@@ -3,247 +3,442 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Harvest Kitchen | Portal</title>
-  <link rel="icon" type="image/png" href="customer/images/logo-icon.png" media="(prefers-color-scheme: dark)">
-  <link rel="icon" type="image/png" href="customer/images/logo.png" media="(prefers-color-scheme: light)">
+  <title>Harvest Kitchen | Restaurant Management Platform</title>
+  <meta name="description" content="Harvest Kitchen — Full-stack restaurant food ordering and management platform with customer, admin and kitchen portals.">
+  <link rel="icon" type="image/png" href="customer/images/logo-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #10b981;
-      --primary-dark: #059669;
-      --primary-light: #d1fae5;
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --card-border: #334155;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
+      --primary:       #16a34a;
+      --primary-dark:  #15803d;
+      --primary-light: #dcfce7;
+      --accent:        #f97316;
+      --accent-light:  #fff7ed;
+      --bg:            #f8faf8;
+      --surface:       #ffffff;
+      --border:        #e5ebe5;
+      --text:          #14231a;
+      --text-2:        #4b6358;
+      --text-3:        #8aab97;
+      --shadow-sm:     0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:     0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg:     0 20px 40px rgba(0,0,0,.10), 0 4px 12px rgba(0,0,0,.06);
+      --radius:        20px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
-      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1.5rem;
+      overflow-x: hidden;
     }
 
-    .container {
-      max-width: 960px;
-      width: 100%;
+    /* ── Background decoration ── */
+    .bg-blobs {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .bg-blobs span {
+      position: absolute; border-radius: 50%; filter: blur(80px); opacity: .35;
+    }
+    .blob-1 { width: 600px; height: 600px; background: #bbf7d0; top: -200px; right: -100px; }
+    .blob-2 { width: 400px; height: 400px; background: #fde68a; bottom: -100px; left: -80px; }
+    .blob-3 { width: 300px; height: 300px; background: #bfdbfe; bottom: 200px; right: 200px; }
+
+    /* ── Layout ── */
+    .page {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 3rem 1.5rem;
+    }
+
+    .container { max-width: 1020px; width: 100%; }
+
+    /* ── Nav bar ── */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2.5rem;
+      background: rgba(255,255,255,.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: inherit;
+    }
+    .nav-brand img { width: 34px; height: 34px; object-fit: contain; }
+    .nav-brand span { font-size: 1.05rem; font-weight: 800; color: var(--text); letter-spacing: -.02em; }
+    .nav-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: .78rem; font-weight: 700;
+      padding: .3rem .85rem; border-radius: 9999px;
+      border: 1px solid #bbf7d0;
+    }
+    .badge-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--primary);
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── Hero ── */
+    .hero {
       text-align: center;
+      padding: 6rem 0 3.5rem;
     }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 1.5rem;
+    .hero-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-light);
+      border: 1px solid #fed7aa;
+      color: #c2410c;
+      font-size: .82rem; font-weight: 700;
+      padding: .38rem 1rem; border-radius: 9999px;
+      margin-bottom: 1.75rem;
+      animation: fadeDown .5s ease both;
     }
-
-    .brand img {
-      width: 48px;
-      height: 48px;
-      object-fit: contain;
-    }
-
-    .brand h1 {
-      font-size: 2rem;
+    .hero-chip span { font-size: 1rem; }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.75rem);
       font-weight: 800;
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      letter-spacing: -.03em;
+      line-height: 1.12;
+      margin-bottom: 1.25rem;
+      animation: fadeDown .55s .05s ease both;
+    }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-
-    .subtitle {
-      color: var(--text-muted);
-      font-size: 1.1rem;
-      max-width: 600px;
-      margin: 0 auto 3rem;
-      line-height: 1.6;
+    .hero p {
+      color: var(--text-2);
+      font-size: 1.15rem;
+      line-height: 1.7;
+      max-width: 560px;
+      margin: 0 auto 2.5rem;
+      animation: fadeDown .6s .1s ease both;
     }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700; font-size: .95rem;
+      padding: .85rem 2rem; border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(22,163,74,.35);
+      transition: all .2s ease;
+      animation: fadeDown .65s .15s ease both;
+    }
+    .hero-cta:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(22,163,74,.4);
+    }
+    .hero-cta svg { transition: transform .2s ease; }
+    .hero-cta:hover svg { transform: translateX(4px); }
 
+    /* ── Stats strip ── */
+    .stats {
+      display: flex; align-items: center; justify-content: center;
+      gap: 2.5rem; flex-wrap: wrap;
+      margin-bottom: 4rem;
+      animation: fadeUp .7s .2s ease both;
+    }
+    .stat { text-align: center; }
+    .stat-num {
+      font-size: 1.6rem; font-weight: 800; letter-spacing: -.03em;
+      color: var(--text);
+    }
+    .stat-label { font-size: .8rem; color: var(--text-3); font-weight: 600; margin-top: 2px; }
+    .stat-divider { width: 1px; height: 36px; background: var(--border); }
+
+    /* ── Portal cards ── */
+    .portals-label {
+      font-size: .78rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-3);
+      margin-bottom: 1.25rem;
+      animation: fadeUp .6s .25s ease both;
+    }
     .portals-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 3rem;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 4rem;
+      animation: fadeUp .65s .3s ease both;
     }
 
     .portal-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       padding: 2rem;
-      text-decoration: none;
-      color: inherit;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      text-align: left;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+      transition: all .25s cubic-bezier(.4,0,.2,1);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
     }
-
-    .portal-card::before {
+    .portal-card::after {
       content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: var(--primary);
-      opacity: 0;
-      transition: opacity 0.25s ease;
+      position: absolute; inset: 0;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.6) 100%);
+      opacity: 0; transition: opacity .25s;
     }
-
     .portal-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(16, 185, 129, 0.4);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+      border-color: transparent;
     }
+    .portal-card:hover::after { opacity: 1; }
 
-    .portal-card:hover::before {
-      opacity: 1;
+    /* Individual card accent colours */
+    .card-customer { --c: #16a34a; --c-bg: #f0fdf4; --c-border: #bbf7d0; }
+    .card-admin    { --c: #7c3aed; --c-bg: #f5f3ff; --c-border: #ddd6fe; }
+    .card-kitchen  { --c: #ea580c; --c-bg: #fff7ed; --c-border: #fed7aa; }
+
+    .portal-card:hover { border-color: var(--c-border); }
+
+    .card-top-accent {
+      position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: var(--c); border-radius: var(--radius) var(--radius) 0 0;
+      transform: scaleX(0); transition: transform .3s ease;
+      transform-origin: left;
     }
+    .portal-card:hover .card-top-accent { transform: scaleX(1); }
 
-    .portal-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .portal-icon-wrap {
+      width: 54px; height: 54px; border-radius: 14px;
+      background: var(--c-bg);
+      border: 1px solid var(--c-border);
+      display: flex; align-items: center; justify-content: center;
       margin-bottom: 1.25rem;
+      color: var(--c);
+      position: relative; z-index: 1;
+      transition: transform .2s ease;
+    }
+    .portal-card:hover .portal-icon-wrap { transform: scale(1.08); }
+
+    .portal-tag {
+      display: inline-flex; align-items: center;
+      background: var(--c-bg); color: var(--c);
+      border: 1px solid var(--c-border);
+      font-size: .72rem; font-weight: 700; letter-spacing: .04em;
+      text-transform: uppercase;
+      padding: .2rem .6rem; border-radius: 6px;
+      margin-bottom: .75rem;
+      position: relative; z-index: 1;
     }
 
-    .portal-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .portal-card h2 {
+      font-size: 1.25rem; font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: .5rem;
+      position: relative; z-index: 1;
     }
-
-    .portal-desc {
-      color: var(--text-muted);
-      font-size: 0.925rem;
-      line-height: 1.5;
-      margin-bottom: 1.5rem;
-      flex-grow: 1;
+    .portal-card p {
+      color: var(--text-2); font-size: .9rem; line-height: 1.6;
+      flex-grow: 1; margin-bottom: 1.5rem;
+      position: relative; z-index: 1;
     }
-
     .portal-link {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--primary);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .875rem; font-weight: 700;
+      color: var(--c);
+      position: relative; z-index: 1;
+      transition: gap .2s ease;
     }
+    .portal-card:hover .portal-link { gap: 10px; }
+    .portal-link svg { transition: transform .2s ease; }
+    .portal-card:hover .portal-link svg { transform: translateX(4px); }
 
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--primary);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      padding: 0.35rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-bottom: 2rem;
+    /* ── Feature strip ── */
+    .features {
+      display: flex; align-items: stretch; gap: 1rem;
+      flex-wrap: wrap; justify-content: center;
+      margin-bottom: 4rem;
+      animation: fadeUp .7s .35s ease both;
     }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--primary);
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    .feature-pill {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .85rem 1.25rem;
+      font-size: .875rem; font-weight: 600; color: var(--text-2);
+      box-shadow: var(--shadow-sm);
     }
+    .feature-pill span { font-size: 1.2rem; }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
+    /* ── Footer ── */
     .footer {
-      color: var(--text-muted);
-      font-size: 0.85rem;
+      text-align: center;
+      color: var(--text-3);
+      font-size: .85rem;
+      padding-bottom: 1rem;
+      animation: fadeUp .7s .4s ease both;
+    }
+    .footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* ── Animations ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    .footer a {
-      color: var(--primary);
-      text-decoration: none;
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .navbar { padding: .85rem 1.25rem; }
+      .stats { gap: 1.25rem; }
+      .stat-divider { display: none; }
+      .hero { padding: 5rem 0 2.5rem; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="status-badge">
-      <span class="status-dot"></span> Development Server Active
+
+  <!-- Soft background blobs -->
+  <div class="bg-blobs">
+    <span class="blob-1"></span>
+    <span class="blob-2"></span>
+    <span class="blob-3"></span>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="nav-brand">
+      <img src="customer/images/logo-icon.png" alt="Harvest Kitchen">
+      <span>Harvest Kitchen</span>
+    </a>
+    <div class="nav-badge">
+      <div class="badge-dot"></div>
+      All Systems Live
     </div>
+  </nav>
 
-    <div class="brand">
-      <img src="logo2.svg" alt="Harvest Kitchen Logo">
-      <h1>Harvest Kitchen</h1>
-    </div>
-    
-    <p class="subtitle">Restaurant Food Ordering & Management Platform. Choose a portal below to get started.</p>
+  <div class="page">
+    <div class="container">
 
-    <div class="portals-grid">
-      <!-- Customer Portal -->
-      <a href="/customer/index.html" class="portal-card">
-        <div class="portal-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero-chip">
+          <span>🌿</span> Full-Stack Restaurant Platform
         </div>
-        <h2 class="portal-title">Customer App</h2>
-        <p class="portal-desc">Browse gourmet menu, add items to cart, place orders, and track delivery progress in real-time.</p>
-        <span class="portal-link">Open Customer Portal &rarr;</span>
-      </a>
+        <h1>One platform for your<br><em>entire restaurant</em></h1>
+        <p>Order management, kitchen display, and admin analytics — all in one beautiful, real-time system.</p>
+        <a href="/customer/index.html" class="hero-cta">
+          Start Ordering
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </section>
 
-      <!-- Admin Portal -->
-      <a href="/admin/login.html" class="portal-card">
-        <div class="portal-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-num">12+</div>
+          <div class="stat-label">Menu Items</div>
         </div>
-        <h2 class="portal-title">Admin Dashboard</h2>
-        <p class="portal-desc">Manage food items, configure pricing, track order analytics, and update live order fulfillment.</p>
-        <span class="portal-link">Open Admin Portal &rarr;</span>
-      </a>
-
-      <!-- Kitchen Display -->
-      <a href="/kitchen/index.html" class="portal-card">
-        <div class="portal-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <div class="stat-num">3</div>
+          <div class="stat-label">Portals</div>
         </div>
-        <h2 class="portal-title">Kitchen Display</h2>
-        <p class="portal-desc">Live order queue for kitchen staff to prepare incoming tickets and update cook statuses.</p>
-        <span class="portal-link">Open Kitchen Display &rarr;</span>
-      </a>
-    </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <div class="stat-num">Live</div>
+          <div class="stat-label">Real-time Orders</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <div class="stat-num">Free</div>
+          <div class="stat-label">Cloud Hosted</div>
+        </div>
+      </div>
 
-    <div class="footer">
-      Harvest Kitchen &bull; Full-Stack Food Ordering System &bull; <a href="/customer/index.html">Launch Storefront</a>
+      <!-- Portal Cards -->
+      <p class="portals-label">Choose your portal</p>
+      <div class="portals-grid">
+
+        <!-- Customer -->
+        <a href="/customer/index.html" class="portal-card card-customer">
+          <div class="card-top-accent"></div>
+          <div class="portal-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          </div>
+          <span class="portal-tag">Customer</span>
+          <h2>Customer App</h2>
+          <p>Browse gourmet menu, add items to cart, place orders, and track delivery progress in real-time.</p>
+          <span class="portal-link">
+            Open Customer Portal
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </a>
+
+        <!-- Admin -->
+        <a href="/admin/login.html" class="portal-card card-admin">
+          <div class="card-top-accent"></div>
+          <div class="portal-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </div>
+          <span class="portal-tag">Admin</span>
+          <h2>Admin Dashboard</h2>
+          <p>Manage food items, configure pricing, track order analytics, and fulfil live orders with ease.</p>
+          <span class="portal-link">
+            Open Admin Portal
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </a>
+
+        <!-- Kitchen -->
+        <a href="/kitchen/index.html" class="portal-card card-kitchen">
+          <div class="card-top-accent"></div>
+          <div class="portal-icon-wrap">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>
+          </div>
+          <span class="portal-tag">Kitchen</span>
+          <h2>Kitchen Display</h2>
+          <p>Live order queue for kitchen staff to prepare incoming tickets and update cook statuses instantly.</p>
+          <span class="portal-link">
+            Open Kitchen Display
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </a>
+
+      </div>
+
+      <!-- Feature pills -->
+      <div class="features">
+        <div class="feature-pill"><span>⚡</span> Real-time order updates</div>
+        <div class="feature-pill"><span>🗄️</span> Cloud MySQL database</div>
+        <div class="feature-pill"><span>🎟️</span> Promo coupons & offers</div>
+        <div class="feature-pill"><span>📊</span> Analytics dashboard</div>
+        <div class="feature-pill"><span>🔒</span> Secure admin login</div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        Harvest Kitchen &bull; Full-Stack Food Ordering System &bull;
+        <a href="/customer/index.html">Launch Storefront →</a>
+      </footer>
+
     </div>
   </div>
+
 </body>
 </html>
