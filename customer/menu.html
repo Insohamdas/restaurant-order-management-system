@@ -2,113 +2,270 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Menu | Harvest Kitchen</title>
   <link rel="icon" type="image/png" href="images/logo-icon.png" media="(prefers-color-scheme: dark)">
   <link rel="icon" type="image/png" href="images/logo.png" media="(prefers-color-scheme: light)">
-  <link rel="stylesheet" href="css/style.css?v=2026_08_31_v9">
+  <link rel="stylesheet" href="css/style.css?v=2026_09_01_v2">
 </head>
-<body>
+<body style="background-color: #ffffff;">
 
-  <!-- Navigation Bar -->
-  <header class="navbar">
-    <div class="container nav-container">
-      <a href="index.html" class="brand-logo">
-        <img src="images/logo.png" alt="Harvest Kitchen" class="brand-logo-img">
-      </a>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="menu.html" class="active">Menu</a></li>
-        <li>
-          <a href="cart.html" class="cart-link">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -3px; margin-right: 4px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Cart <span class="cart-badge" id="cartCount">0</span>
+  <div class="mobile-ui-wrapper">
+    
+    <!-- Top Hero Section with Looping Background Video -->
+    <div class="header-hero-wrapper">
+      <div class="hero-video-bg-container">
+        <video 
+          class="hero-bg-video" 
+          autoplay 
+          muted 
+          loop 
+          playsinline 
+          webkit-playsinline
+          disablepictureinpicture 
+          preload="auto"
+          src="video.mp4"
+        >
+          <source src="video.mp4" type="video/mp4">
+          <source src="../video.mp4" type="video/mp4">
+          <source src="images/video.mp4" type="video/mp4">
+        </video>
+        <div class="hero-video-overlay"></div>
+      </div>
+
+      <!-- Mobile Top Navigation Header -->
+      <header class="mobile-top-bar">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <a href="index.html" class="icon-btn" title="Back" aria-label="Go Back">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           </a>
-        </li>
-        <li><a href="track-order.html">Track Order</a></li>
-      </ul>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <div class="container">
-
-      <!-- Header & Search Bar -->
-      <div class="section-header" style="flex-wrap: wrap; gap: 20px; align-items: center; margin-bottom: 25px;">
-        <div>
-          <h1 class="section-title">Explore Our Menu</h1>
-          <p class="section-subtitle">Discover handcrafted dishes prepared fresh to order</p>
         </div>
-        <div style="min-width: 260px;">
-          <input 
-            type="text" 
-            id="foodSearchInput" 
-            class="form-control" 
-            placeholder="Search dishes, ingredients..." 
-            style="border-radius: var(--radius-full);"
-          >
+        <div class="mobile-top-actions">
+          <a href="account.html" class="icon-btn" title="Account & Profile" aria-label="Account">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          </a>
+          <a href="track-order.html" class="icon-btn" title="Track Order & More" aria-label="More Options">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+          </a>
+        </div>
+      </header>
+
+      <!-- Restaurant Header Overview Card with Prominent Deals Showcase -->
+      <section class="restaurant-card-section">
+        <div class="restaurant-hero-card">
+          <div class="restaurant-hero-top">
+            <div class="restaurant-title-box">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <img src="images/logo.png" alt="Harvest Kitchen" style="height: 32px; width: auto; object-fit: contain;">
+                <h1 id="restaurantNameHeading" style="margin: 0; font-size: 1.35rem; font-weight: 800; color: #111827;">Harvest Kitchen</h1>
+              </div>
+              <div class="restaurant-meta-line" style="margin-top: 4px;">
+                <span>25-30 mins</span>
+                <span>|</span>
+                <button id="locationDropdownBtn" class="location-dropdown-btn" type="button">
+                  <span id="currentLocationName">Belghoria</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="restaurant-rating-badge">
+              <div class="rating-pill-green">
+                <span>4.0</span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <span class="rating-subtext">219 ratings</span>
+            </div>
+          </div>
+
+          <!-- Prominent Active Deals & Offers Showcase (WELCOME50, HARVEST20, FLAT100, FREEDEL) -->
+          <div class="offers-section-header">
+            <span>🔥 AVAILABLE OFFERS & DEALS</span>
+            <small>Tap coupon to apply</small>
+          </div>
+          <div class="offers-showcase-row" id="offersShowcaseRow">
+            <!-- Dynamically populated via loadCoupons() in menu.js -->
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="menu-main-content-wrap">
+      
+      <!-- Top Search & Collapsible Filter Bar -->
+      <div class="search-and-filters-panel">
+        
+        <!-- Search Bar Row with Filter Toggle Button -->
+        <div class="search-bar-top-row">
+          <div class="mobile-search-pill">
+            <input 
+              type="text" 
+              id="foodSearchInput" 
+              class="mobile-search-input" 
+              placeholder="Search for dishes, cuisines..." 
+              autocomplete="off"
+            >
+            <button class="search-icon-btn" title="Search" aria-label="Search">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+            <div class="search-divider"></div>
+            <button class="mic-icon-btn" id="micSearchBtn" title="Voice Search" aria-label="Voice Search">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+          </div>
+
+          <!-- Collapsible Filters Toggle Button -->
+          <button type="button" class="btn-toggle-filters" id="toggleFilterCollapseBtn" title="Toggle Filters">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            <span>Filters</span>
+            <svg id="filterCollapseChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transition: transform 0.2s ease;"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+
+        <!-- Collapsible Filter Section (Preferences + Categories) -->
+        <div class="collapsible-filters-box" id="collapsibleFiltersSection">
+          
+          <!-- Preference Filter Toggles Row -->
+          <div class="pref-filters-row" id="mobileFilterBar">
+            <button type="button" class="filter-chip chip-toggle-veg" id="chipVegToggle" title="Filter Pure Vegetarian">
+              <div class="veg-box-icon"><span class="veg-circle"></span></div>
+              <span>Veg Only</span>
+            </button>
+
+            <button type="button" class="filter-chip chip-toggle-nonveg" id="chipNonVegToggle" title="Filter Non-Vegetarian">
+              <div class="nonveg-box-icon"><span class="nonveg-triangle"></span></div>
+              <span>Non-Veg</span>
+            </button>
+
+            <button type="button" class="filter-chip" id="chipEatRight">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#0f8a3c"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              <span>EatRight</span>
+            </button>
+
+            <button type="button" class="filter-chip" id="chipRating4Plus">
+              <span>★ 4.0+ Rating</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Categories Navigation Row -->
+          <div class="categories-nav-row" id="dynamicCategoryChips">
+            <!-- Dynamically rendered with icons via menu.js -->
+            <button type="button" class="cat-nav-btn active" data-category="All">🍽️ All Items</button>
+            <button type="button" class="cat-nav-btn" data-category="Main Course">🍛 Main Course</button>
+            <button type="button" class="cat-nav-btn" data-category="Appetizers">🥟 Appetizers</button>
+            <button type="button" class="cat-nav-btn" data-category="Dessert">🍰 Dessert</button>
+            <button type="button" class="cat-nav-btn" data-category="Pizza">🍕 Pizza</button>
+            <button type="button" class="cat-nav-btn" data-category="Burger">🍔 Burger</button>
+            <button type="button" class="cat-nav-btn" data-category="Drinks">🥤 Drinks</button>
+            <button type="button" class="cat-nav-btn" data-category="Combos">🍱 Combos</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FREE Item Reward Card -->
+      <div class="free-item-section" id="freeItemRewardSection">
+        <div class="free-item-banner">
+          <div class="free-item-header">
+            <span>FREE Reward for you!</span>
+            <span>🎁🎉</span>
+          </div>
+          <div class="free-item-card-inner">
+            <div class="free-item-info">
+              <div class="free-item-title-row">
+                <div id="freeItemIcon" class="veg-box-icon"><span class="veg-circle"></span></div>
+                <span class="free-item-name" id="freeItemName">Warm Chocolate Brownie</span>
+              </div>
+              <p class="free-item-claim-text" id="freeItemClaimText">
+                <strong>₹99</strong> <span class="green-text">Add items above ₹299 to claim</span>
+              </p>
+              <div class="free-item-progress-bar">
+                <div class="free-item-progress-fill" id="freeItemProgressFill" style="width: 0%;"></div>
+              </div>
+            </div>
+            <img 
+              id="freeItemThumb"
+              src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=500&auto=format&fit=crop&q=80" 
+              alt="Free Reward Item" 
+              class="free-item-thumb"
+            >
+          </div>
         </div>
       </div>
 
-      <!-- Category Filter Tabs -->
-      <div class="category-filter-bar">
-        <button class="filter-btn active" data-category="All">All Items</button>
-        <button class="filter-btn" data-category="Combos" style="background: #fef2f2; color: #df1f26; font-weight: 700; border-color: #fca5a5;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-          Combos & Bundles
-        </button>
-        <button class="filter-btn" data-category="Pizza">Pizza</button>
-        <button class="filter-btn" data-category="Burger">Burger</button>
-        <button class="filter-btn" data-category="Main Course">Main Course</button>
-        <button class="filter-btn" data-category="Appetizers">Appetizers</button>
-        <button class="filter-btn" data-category="Drinks">Drinks</button>
-        <button class="filter-btn" data-category="Dessert">Dessert</button>
+      <!-- Category Header & Food Grid -->
+      <div class="category-section-header" id="categoryAccordionHeader">
+        <div class="category-title-wrap">
+          <h2 class="category-main-title">Recommended Dishes <span id="categoryItemCount">(10)</span></h2>
+        </div>
       </div>
 
       <!-- Food Grid -->
-      <div class="food-grid" id="foodGrid">
+      <div class="mobile-food-grid" id="foodGrid">
         <!-- Dynamically rendered via menu.js -->
       </div>
 
     </div>
-  </main>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container footer-content">
-      <div class="footer-brand-section">
-        <img src="images/logo-full.png" alt="Harvest Kitchen" class="footer-logo">
-        <p class="footer-tagline">
-          Delicious Food, Delivered Fresh. Artisan recipes prepared with organic, farm-sourced ingredients.
-        </p>
+    <!-- Sticky Floating Bottom Cart Bar -->
+    <a href="cart.html" class="floating-bottom-cart-bar" id="floatingCartBar">
+      <div class="floating-cart-left">
+        <span class="floating-cart-items-text" id="floatingCartItems">1 ITEM</span>
+        <span class="floating-cart-total-text" id="floatingCartTotal">₹90</span>
       </div>
-
-      <div class="footer-links-row">
-        <a href="index.html">Home</a>
-        <a href="menu.html">Explore Menu</a>
-        <a href="cart.html">My Cart</a>
-        <a href="track-order.html">Track Order</a>
-        <a href="account.html">Account &amp; Offers</a>
+      <div class="floating-cart-btn-text">
+        <span>View Cart</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
+    </a>
 
-      <div class="footer-divider"></div>
-
-      <div class="footer-bottom">
-        <div>&copy; 2026 Harvest Kitchen. All rights reserved.</div>
-        <div class="made-with-love">
-          <span>Made with love</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#df1f26" stroke="#df1f26" stroke-width="1.5"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-          <span>for food lovers</span>
+    <!-- Location Selector Modal Sheet -->
+    <div class="location-modal-overlay" id="locationModal">
+      <div class="location-sheet">
+        <div class="location-sheet-header">
+          <h3>Select Delivery Location</h3>
+          <button id="closeLocationModalBtn" class="icon-btn" style="color: #64748b; background: #f1f5f9; border-radius: 50%; width: 32px; height: 32px; border:none; cursor:pointer;">✕</button>
+        </div>
+        <div class="location-option-item selected" data-location="Belghoria">
+          <div>
+            <strong>Belghoria, Kolkata</strong>
+            <p style="font-size: 0.76rem; color: #64748b; margin-top: 2px;">Estimated delivery in 25-30 mins</p>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#0f8a3c"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="location-option-item" data-location="Salt Lake (Sector V)">
+          <div>
+            <strong>Salt Lake (Sector V), Kolkata</strong>
+            <p style="font-size: 0.76rem; color: #64748b; margin-top: 2px;">Estimated delivery in 35-40 mins</p>
+          </div>
+        </div>
+        <div class="location-option-item" data-location="Dum Dum">
+          <div>
+            <strong>Dum Dum Cantt, Kolkata</strong>
+            <p style="font-size: 0.76rem; color: #64748b; margin-top: 2px;">Estimated delivery in 20-25 mins</p>
+          </div>
+        </div>
+        <div class="location-option-item" data-location="Park Street">
+          <div>
+            <strong>Park Street, Central Kolkata</strong>
+            <p style="font-size: 0.76rem; color: #64748b; margin-top: 2px;">Estimated delivery in 40-45 mins</p>
+          </div>
+        </div>
+        <div class="location-option-item" data-location="New Town">
+          <div>
+            <strong>New Town Action Area 1</strong>
+            <p style="font-size: 0.76rem; color: #64748b; margin-top: 2px;">Estimated delivery in 30-35 mins</p>
+          </div>
         </div>
       </div>
     </div>
-  </footer>
+
+  </div>
 
   <!-- Scripts -->
-  <script src="js/common.js?v=2026_08_31_v7"></script>
-  <script src="js/api.js?v=2026_08_31_v7"></script>
-  <script src="js/cart.js?v=2026_08_31_v7"></script>
-  <script src="js/menu.js?v=2026_08_31_v7"></script>
+  <script src="js/common.js?v=2026_09_01_v1"></script>
+  <script src="js/api.js?v=2026_09_01_v1"></script>
+  <script src="js/cart.js?v=2026_09_01_v1"></script>
+  <script src="js/menu.js?v=2026_09_01_v1"></script>
 </body>
 </html>
-

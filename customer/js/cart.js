@@ -148,6 +148,9 @@ const CartService = {
     if (typeof updateFloatingCartBar === 'function') {
       updateFloatingCartBar(count, subtotal);
     }
+    if (typeof updateFreeItemProgress === 'function') {
+      updateFreeItemProgress(subtotal);
+    }
   },
 
   // Sync interactive quantity steppers across all cards currently on screen
@@ -162,25 +165,48 @@ const CartService = {
     document.querySelectorAll('[data-card-food-id]').forEach(wrap => {
       const foodId = parseInt(wrap.getAttribute('data-card-food-id'), 10);
       const qty = map[foodId] || 0;
+      const isMobileCard = wrap.classList.contains('mobile-card-action') || wrap.closest('.mobile-dish-card');
 
       if (qty > 0) {
-        wrap.innerHTML = `
-          <div class="card-qty-stepper">
-            <button class="stepper-btn stepper-minus" onclick="handleCardQtyChange(${foodId}, -1, event)" title="Decrease" aria-label="Decrease quantity">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
-            <span class="stepper-val">${qty}</span>
-            <button class="stepper-btn stepper-plus" onclick="handleCardQtyChange(${foodId}, 1, event)" title="Increase" aria-label="Increase quantity">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
-          </div>
-        `;
+        if (isMobileCard) {
+          wrap.innerHTML = `
+            <div class="mobile-qty-stepper">
+              <button class="mobile-stepper-btn" onclick="handleCardQtyChange(${foodId}, -1, event)" title="Decrease" aria-label="Decrease quantity">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <span class="mobile-stepper-val">${qty}</span>
+              <button class="mobile-stepper-btn" onclick="handleCardQtyChange(${foodId}, 1, event)" title="Increase" aria-label="Increase quantity">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+            </div>
+          `;
+        } else {
+          wrap.innerHTML = `
+            <div class="card-qty-stepper">
+              <button class="stepper-btn stepper-minus" onclick="handleCardQtyChange(${foodId}, -1, event)" title="Decrease" aria-label="Decrease quantity">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+              <span class="stepper-val">${qty}</span>
+              <button class="stepper-btn stepper-plus" onclick="handleCardQtyChange(${foodId}, 1, event)" title="Increase" aria-label="Increase quantity">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </button>
+            </div>
+          `;
+        }
       } else {
-        wrap.innerHTML = `
-          <button class="btn btn-primary btn-sm btn-add-cart" onclick="handleCardInitialAdd(${foodId}, event)">
-            + Add to Cart
-          </button>
-        `;
+        if (isMobileCard) {
+          wrap.innerHTML = `
+            <button class="btn-mobile-add" onclick="handleCardInitialAdd(${foodId}, event)">
+              ADD
+            </button>
+          `;
+        } else {
+          wrap.innerHTML = `
+            <button class="btn btn-primary btn-sm btn-add-cart" onclick="handleCardInitialAdd(${foodId}, event)">
+              + Add to Cart
+            </button>
+          `;
+        }
       }
     });
   },
@@ -202,6 +228,26 @@ const CartService = {
     }, 2200);
   }
 };
+
+// Update Floating Cart Bar (Positioned cleanly above Mobile Bottom Nav)
+function updateFloatingCartBar(count, subtotal) {
+  const bar = document.getElementById('floatingCartBar');
+  const legacy = document.getElementById('mobileFloatingCart');
+  if (legacy) legacy.remove();
+
+  if (!bar) return;
+
+  if (count > 0) {
+    bar.style.display = 'flex';
+    const itemsLabel = count === 1 ? '1 ITEM' : `${count} ITEMS`;
+    const itemsEl = document.getElementById('floatingCartItems');
+    const totalEl = document.getElementById('floatingCartTotal');
+    if (itemsEl) itemsEl.textContent = itemsLabel;
+    if (totalEl) totalEl.textContent = `₹${Math.round(subtotal)}`;
+  } else {
+    bar.style.display = 'none';
+  }
+}
 
 // Global Card Stepper Handlers for Home and Menu pages
 function handleCardInitialAdd(foodId, event) {

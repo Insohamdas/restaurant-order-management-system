@@ -62,40 +62,25 @@ function updateCartBadge() {
   updateFloatingCartBar(count, total);
 }
 
-// Mobile Floating Cart Bar (for fast checkout on mobile screens)
+// Mobile Floating Cart Bar (Positioned cleanly above Mobile Bottom Nav)
 function updateFloatingCartBar(count, total) {
-  const isMenuOrHome = window.location.pathname.endsWith('menu.html') || 
-                       window.location.pathname.endsWith('index.html') || 
-                       window.location.pathname.endsWith('/') || 
-                       window.location.pathname.endsWith('/customer/');
-  
-  if (!isMenuOrHome) return;
-
-  let bar = document.getElementById('mobileFloatingCart');
-  if (count <= 0) {
-    if (bar) bar.style.display = 'none';
+  const bar = document.getElementById('floatingCartBar');
+  if (bar) {
+    if (count > 0) {
+      bar.style.display = 'flex';
+      const itemsLabel = count === 1 ? '1 ITEM' : `${count} ITEMS`;
+      const itemsEl = document.getElementById('floatingCartItems');
+      const totalEl = document.getElementById('floatingCartTotal');
+      if (itemsEl) itemsEl.textContent = itemsLabel;
+      if (totalEl) totalEl.textContent = `₹${Math.round(total)}`;
+    } else {
+      bar.style.display = 'none';
+    }
+    // Remove duplicate legacy floating cart if any
+    const legacy = document.getElementById('mobileFloatingCart');
+    if (legacy) legacy.remove();
     return;
   }
-
-  if (!bar) {
-    bar = document.createElement('div');
-    bar.id = 'mobileFloatingCart';
-    bar.className = 'mobile-floating-cart';
-    document.body.appendChild(bar);
-  }
-
-  bar.style.display = 'flex';
-  bar.innerHTML = `
-    <div class="m-cart-info">
-      <span class="m-cart-qty">${count} ${count === 1 ? 'ITEM' : 'ITEMS'}</span>
-      <span class="m-cart-divider">•</span>
-      <span class="m-cart-total">${formatCurrency(total)}</span>
-    </div>
-    <a href="cart.html" class="m-cart-cta">
-      <span>View Cart</span>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </a>
-  `;
 }
 
 // Native Mobile Bottom Navigation Bar

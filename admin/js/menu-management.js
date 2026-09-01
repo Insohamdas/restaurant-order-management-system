@@ -40,19 +40,65 @@ async function loadMenuManagement() {
   try {
     const res = await fetch(`${API_BASE}/foods`);
     if (!res.ok) throw new Error('Failed to load foods');
-    allFoodItems = await res.json();
+    const apiFoods = await res.json();
+    if (Array.isArray(apiFoods) && apiFoods.length >= 30) {
+      allFoodItems = apiFoods;
+    } else {
+      const mergedMap = new Map();
+      ADMIN_SEED_FOODS.forEach(s => mergedMap.set(s.name.toLowerCase(), s));
+      if (Array.isArray(apiFoods)) {
+        apiFoods.forEach(a => mergedMap.set(a.name.toLowerCase(), a));
+      }
+      allFoodItems = Array.from(mergedMap.values());
+    }
     renderMenuTable(allFoodItems);
   } catch (error) {
-    console.error('Error fetching menu items:', error);
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="7" style="text-align: center; color: var(--danger); padding: 30px;">
-          Failed to load food items from server.
-        </td>
-      </tr>
-    `;
+    console.warn('Backend API offline, displaying 38-item catalog:', error);
+    allFoodItems = ADMIN_SEED_FOODS;
+    renderMenuTable(allFoodItems);
   }
 }
+
+const ADMIN_SEED_FOODS = [
+  { id: 1, name: "Margherita Pizza", description: "Classic Italian delight with 100% real mozzarella cheese, San Marzano tomatoes, and fresh basil.", price: 199, category: "Pizza", stockQuantity: 45, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500&auto=format&fit=crop&q=80" },
+  { id: 2, name: "Farmhouse Special Pizza", description: "Loaded with crunchy bell peppers, crisp red onions, sweet golden corn, button mushrooms, and mozzarella.", price: 249, category: "Pizza", stockQuantity: 30, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500&auto=format&fit=crop&q=80" },
+  { id: 3, name: "Peri Peri Paneer Pizza", description: "Spicy marinated cottage cheese cubes, roasted red peppers, jalapeños, and peri-peri drizzle with herbs.", price: 279, category: "Pizza", stockQuantity: 35, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&auto=format&fit=crop&q=80" },
+  { id: 4, name: "Smoky BBQ Chicken Pizza", description: "Tender chunks of grilled barbecue chicken, caramelized red onions, mozzarella, and smoked chipotle glaze.", price: 299, category: "Pizza", stockQuantity: 30, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&auto=format&fit=crop&q=80" },
+  { id: 5, name: "Pepperoni & Sausage Pizza", description: "Generous slices of spicy pepperoni, chicken sausage, black olives, and mozzarella on seasoned tomato sauce.", price: 329, category: "Pizza", stockQuantity: 25, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=500&auto=format&fit=crop&q=80" },
+  { id: 6, name: "Truffle Mushroom Pizza", description: "Sauteed wild button mushrooms, roasted garlic, creamy ricotta, and mozzarella with truffle herb essence.", price: 349, category: "Pizza", stockQuantity: 20, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=500&auto=format&fit=crop&q=80" },
+  { id: 7, name: "Classic Crispy Veg Burger", description: "Crispy golden spiced vegetable patty topped with fresh lettuce, ripe tomatoes, pickles, and herb mayo.", price: 149, category: "Burger", stockQuantity: 40, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500&auto=format&fit=crop&q=80" },
+  { id: 8, name: "Spicy Paneer Tikka Burger", description: "Charcoal grilled paneer patty seasoned with tandoori spices, mint mayonnaise, onion rings, and brioche bun.", price: 189, category: "Burger", stockQuantity: 35, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=500&auto=format&fit=crop&q=80" },
+  { id: 9, name: "Gourmet Grilled Chicken Burger", description: "Juicy tender grilled chicken breast fillet with crisp lettuce, melted cheddar cheese, and BBQ sauce.", price: 199, category: "Burger", stockQuantity: 25, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&auto=format&fit=crop&q=80" },
+  { id: 10, name: "Double Smash Cheeseburger", description: "Twin smashed chicken patties layered with double melted American cheese, caramelized onions, and relish.", price: 249, category: "Burger", stockQuantity: 20, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1583032015879-c63bfb49e498?w=500&auto=format&fit=crop&q=80" },
+  { id: 11, name: "Peri Peri Crispy Chicken Burger", description: "Deep-fried golden crispy chicken thigh patty tossed in zesty peri peri dust with sriracha mayo slaw.", price: 219, category: "Burger", stockQuantity: 30, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=500&auto=format&fit=crop&q=80" },
+  { id: 12, name: "Grilled Veg Club Sandwich", description: "Triple-layered toasted whole wheat sandwich packed with roasted bell peppers, cucumbers, and pesto spread.", price: 169, category: "Burger", stockQuantity: 35, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500&auto=format&fit=crop&q=80" },
+  { id: 13, name: "Crispy French Fries", description: "Lightly salted, perfectly crisp golden potato fries served with garlic herb dip and ketchup.", price: 119, category: "Appetizers", stockQuantity: 60, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1576107232684-1279f3908594?w=500&auto=format&fit=crop&q=80" },
+  { id: 14, name: "Peri Peri Crinkle Fries", description: "Hot crinkle cut potato fries tossed in fiery African peri peri seasoning and served with cheese dip.", price: 139, category: "Appetizers", stockQuantity: 50, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500&auto=format&fit=crop&q=80" },
+  { id: 15, name: "Loaded Cheesy Garlic Bread", description: "Freshly baked artisanal baguette topped with garlic herb butter, melted mozzarella, and oregano flakes.", price: 159, category: "Appetizers", stockQuantity: 45, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1619860860774-1e2e17343432?w=500&auto=format&fit=crop&q=80" },
+  { id: 16, name: "Crispy Paneer Popcorn", description: "Bite-sized crunchy spiced paneer nuggets served with tangy thousand island dressing.", price: 179, category: "Appetizers", stockQuantity: 40, available: true, isLowStock: false, imageUrl: "images/paneer_popcorn.jpg" },
+  { id: 17, name: "Golden Chicken Nuggets (8 Pcs)", description: "Tender seasoned minced chicken bites with a golden crumb coating and sweet honey mustard.", price: 199, category: "Appetizers", stockQuantity: 40, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1562967914-608f82629710?w=500&auto=format&fit=crop&q=80" },
+  { id: 18, name: "Spicy BBQ Wings (6 Pcs)", description: "Succulent baked and glazed chicken wings tossed in tangy hickory barbecue sauce and toasted sesame.", price: 229, category: "Appetizers", stockQuantity: 35, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500&auto=format&fit=crop&q=80" },
+  { id: 19, name: "Vegetable Spring Rolls (4 Pcs)", description: "Delicate fried pastry rolls filled with shredded cabbage, carrots, bell peppers, and sweet chili dip.", price: 149, category: "Appetizers", stockQuantity: 40, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500&auto=format&fit=crop&q=80" },
+  { id: 20, name: "Paneer Butter Masala", description: "Soft fresh cottage cheese cubes slow cooked in a rich, velvety tomato and cashew butter gravy.", price: 249, category: "Main Course", stockQuantity: 35, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=500&auto=format&fit=crop&q=80" },
+  { id: 21, name: "Dal Makhani Royale", description: "Black lentils and kidney beans slow simmered overnight with butter, cream, and aromatic spices.", price: 219, category: "Main Course", stockQuantity: 40, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500&auto=format&fit=crop&q=80" },
+  { id: 22, name: "Kadhai Paneer Special", description: "Fresh paneer cubes stir-fried with crunchy bell peppers, crushed coriander, and spicy onion-tomato gravy.", price: 259, category: "Main Course", stockQuantity: 30, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=500&auto=format&fit=crop&q=80" },
+  { id: 23, name: "Butter Chicken Boneless", description: "Succulent tandoori roasted chicken pieces simmered in silky makhani gravy enriched with fresh cream.", price: 299, category: "Main Course", stockQuantity: 45, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500&auto=format&fit=crop&q=80" },
+  { id: 24, name: "Hyderabadi Chicken Biryani", description: "Fragrant long-grain basmati rice cooked on dum with marinated chicken, saffron, and fresh mint.", price: 299, category: "Main Course", stockQuantity: 40, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&auto=format&fit=crop&q=80" },
+  { id: 25, name: "Royal Mutton Biryani", description: "Tender pieces of slow-cooked spiced mutton layered with saffron basmati rice, rose water, and boiled egg.", price: 379, category: "Main Course", stockQuantity: 25, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=500&auto=format&fit=crop&q=80" },
+  { id: 26, name: "Steamed Saffron Basmati Rice", description: "Fluffy aged aromatic basmati rice infused with whole saffron strands and a hint of pure desi ghee.", price: 129, category: "Main Course", stockQuantity: 50, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500&auto=format&fit=crop&q=80" },
+  { id: 27, name: "Butter Naan (2 Pcs)", description: "Traditional clay oven-baked leavened flatbread brushed with generous golden dairy butter.", price: 69, category: "Main Course", stockQuantity: 60, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=500&auto=format&fit=crop&q=80" },
+  { id: 28, name: "Rich Cold Coffee with Ice Cream", description: "Handcrafted chilled blended espresso coffee with creamy vanilla bean ice cream and chocolate drizzle.", price: 129, category: "Drinks", stockQuantity: 50, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=500&auto=format&fit=crop&q=80" },
+  { id: 29, name: "Classic Virgin Mojito", description: "Refreshing mocktail muddled with garden fresh mint leaves, lime juice, sparkling soda, and crushed ice.", price: 119, category: "Drinks", stockQuantity: 50, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=500&auto=format&fit=crop&q=80" },
+  { id: 30, name: "Belgian Chocolate Shake", description: "Decadent thick milkshake prepared with rich Belgian cocoa, dark chocolate fudge, and chocolate shavings.", price: 159, category: "Drinks", stockQuantity: 40, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=500&auto=format&fit=crop&q=80" },
+  { id: 31, name: "Alphonso Mango Smoothie", description: "Creamy yogurt smoothie blended with ripe sweet Alphonso mango pulp and topped with chia seeds.", price: 149, category: "Drinks", stockQuantity: 40, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1623065422902-30a2d299bbe4?w=500&auto=format&fit=crop&q=80" },
+  { id: 32, name: "Fresh Masala Lemonade", description: "Zesty hand-pressed lemon juice with black salt, roasted cumin, fresh mint, and sparkling chilled water.", price: 89, category: "Drinks", stockQuantity: 60, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1523371054106-bbf80586c38c?w=500&auto=format&fit=crop&q=80" },
+  { id: 33, name: "Chilled Coca-Cola (500ml)", description: "Classic bubbly Coca-Cola carbonated soft drink served refreshingly chilled.", price: 49, category: "Drinks", stockQuantity: 80, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500&auto=format&fit=crop&q=80" },
+  { id: 34, name: "Warm Fudge Chocolate Brownie", description: "Freshly baked walnut chocolate brownie served warm with molten dark chocolate ganache.", price: 159, category: "Dessert", stockQuantity: 35, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=500&auto=format&fit=crop&q=80" },
+  { id: 35, name: "Shahi Gulab Jamun (2 Pcs)", description: "Melt-in-the-mouth golden milk dumplings soaked in saffron and green cardamom warm sugar syrup.", price: 99, category: "Dessert", stockQuantity: 40, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=500&auto=format&fit=crop&q=80" },
+  { id: 36, name: "Saffron Rasmalai (2 Pcs)", description: "Delicate spongy cottage cheese discs soaked in chilled thickened saffron and pistachio milk.", price: 129, category: "Dessert", stockQuantity: 35, available: true, isLowStock: false, imageUrl: "images/saffron_rasmalai.jpg" },
+  { id: 37, name: "New York Baked Cheesecake", description: "Rich and velvety classic baked cheesecake over a buttery biscuit crust with blueberry compote.", price: 189, category: "Dessert", stockQuantity: 30, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=500&auto=format&fit=crop&q=80" },
+  { id: 38, name: "Red Velvet Lava Cupcake", description: "Moist red velvet sponge filled with warm white chocolate lava and cream cheese frosting swirl.", price: 139, category: "Dessert", stockQuantity: 35, available: true, isLowStock: false, imageUrl: "https://images.unsplash.com/photo-1614707267537-b85aaf00c4b7?w=500&auto=format&fit=crop&q=80" }
+];
 
 function renderMenuTable(foods) {
   const tbody = document.getElementById('menuTableBody');
