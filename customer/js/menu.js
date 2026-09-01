@@ -32,20 +32,67 @@ let currentRewardItem = {
 
 document.addEventListener('DOMContentLoaded', () => {
   initHeroVideo();
-  initRestaurantBranding();
   initMobileFilters();
   initSearch();
   initVoiceSearch();
   initLocationModal();
   loadFavoritesSet();
-  loadCoupons();
-  loadCombos();
-  loadMenu();
+
+  // 1. Instant Zero-Wait UI Render (Renders entire menu & deals in 0ms)
+  initInstantMenu();
+
+  // 2. Silent Background Sync (Fetches live updates without blocking user)
+  syncBackendDataInBackground();
 
   if (typeof CartService !== 'undefined') {
     updateFreeItemProgress(CartService.calculateSubtotal());
   }
 });
+
+function initInstantMenu() {
+  const cached = getCachedFoods();
+  allFoodItems = processBackendFoods(cached || SEED_HARVEST_FOODS);
+  activeCoupons = getCachedCoupons() || [
+    { code: "WELCOME50", title: "50% OFF up to ₹100", subtext: "ABOVE ₹199", discount: 50, min: 199 },
+    { code: "HARVEST20", title: "Flat 20% OFF", subtext: "ABOVE ₹299", discount: 20, min: 299 },
+    { code: "FREEDEL", title: "FREE Delivery", subtext: "ABOVE ₹199", discount: 40, min: 199 },
+    { code: "FLAT100", title: "Flat ₹100 OFF", subtext: "ABOVE ₹599", discount: 100, min: 599 }
+  ];
+
+  renderOffersShowcase();
+  renderCategoryChips();
+  setupDynamicRewardItem();
+  filterAndRenderFoods();
+}
+
+function getCachedFoods() {
+  try {
+    const raw = localStorage.getItem('harvest_cached_foods_v2');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length >= 30) return parsed;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function getCachedCoupons() {
+  try {
+    const raw = localStorage.getItem('harvest_cached_coupons_v2');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) {}
+  return null;
+}
+
+async function syncBackendDataInBackground() {
+  initRestaurantBranding();
+  loadCoupons();
+  loadCombos();
+  loadMenu();
+}
 
 /* ================= Background Video Autoplay Runner ================= */
 function initHeroVideo() {
@@ -90,7 +137,7 @@ function initHeroVideo() {
 async function initRestaurantBranding() {
   const headingEl = document.getElementById('restaurantNameHeading');
   try {
-    const res = await fetch(`${API_BASE}/settings`);
+    const res = await fetchWithTimeout(`${API_BASE}/settings`, {}, 4000);
     if (res.ok) {
       const settings = await res.json();
       if (headingEl && settings.restaurantName) {
@@ -108,7 +155,7 @@ async function initRestaurantBranding() {
 /* ================= Live Coupons & Offers Showcase ================= */
 async function loadCoupons() {
   try {
-    const res = await fetch(`${API_BASE}/coupons/active`);
+    const res = await fetchWithTimeout(`${API_BASE}/coupons/active`, {}, 5000);
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
@@ -122,10 +169,13 @@ async function loadCoupons() {
           min: c.minOrderAmount || 0,
           type: c.discountType
         }));
+        try {
+          localStorage.setItem('harvest_cached_coupons_v2', JSON.stringify(activeCoupons));
+        } catch (e) {}
       }
     }
   } catch (e) {
-    console.warn('Could not fetch live coupons from API, using default Harvest Kitchen coupons:', e);
+    // Already rendered default coupons instantly
   }
 
   // Fallback to official Harvest Kitchen coupons if none returned
@@ -448,25 +498,25 @@ async function loadFavoritesSet() {
   const user = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
   if (!user) return;
   try {
-    const res = await fetch(`${API_BASE}/favorites/${user.phone}`);
+    const res = await fetchWithTimeout(`${API_BASE}/favorites/${user.phone}`, {}, 4000);
     if (res.ok) {
       const items = await res.json();
       favoriteFoodIds = new Set(items.map(i => i.id));
     }
   } catch (e) {
-    console.error(e);
+    // Silently proceed
   }
 }
 
 async function loadCombos() {
   try {
-    const res = await fetch(`${API_BASE}/combos/active`);
+    const res = await fetchWithTimeout(`${API_BASE}/combos/active`, {}, 4000);
     if (res.ok) {
       allCombos = await res.json();
       renderCategoryChips();
     }
   } catch (e) {
-    console.error('Error loading combos:', e);
+    // Silently proceed
   }
 }
 
@@ -1093,19 +1143,16 @@ const SEED_HARVEST_FOODS = [
   }
 ];
 
+function fetchWithTimeout(url, options = {}, timeoutMs = 6000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(timeoutId));
+}
+
 async function loadMenu(retryCount = 0) {
-  const container = document.getElementById('foodGrid');
-  if (!container) return;
-
-  container.innerHTML = `
-    <div style="grid-column: 1 / -1; text-align: center; padding: 40px 10px; color: var(--text-muted);">
-      <div class="spinner-border text-danger" role="status" style="width: 2rem; height: 2rem; margin-bottom: 12px;"></div>
-      <p style="font-weight: 600; font-size: 0.9rem;">Loading Harvest Kitchen menu...</p>
-    </div>
-  `;
-
   try {
-    const res = await fetch(`${API_BASE}/foods`);
+    const res = await fetchWithTimeout(`${API_BASE}/foods`, {}, 6000);
     if (!res.ok) throw new Error('Could not fetch foods');
     const apiFoods = await res.json();
     
@@ -1121,15 +1168,16 @@ async function loadMenu(retryCount = 0) {
       allFoodItems = processBackendFoods(Array.from(mergedMap.values()));
     }
 
+    try {
+      localStorage.setItem('harvest_cached_foods_v2', JSON.stringify(allFoodItems));
+    } catch (e) {}
+
     renderCategoryChips();
     setupDynamicRewardItem();
     filterAndRenderFoods();
   } catch (error) {
-    console.warn('Backend API offline, loading full 38-item catalog:', error);
-    allFoodItems = processBackendFoods(SEED_HARVEST_FOODS);
-    renderCategoryChips();
-    setupDynamicRewardItem();
-    filterAndRenderFoods();
+    console.log('Backend sync in background (using cached 38-item catalog):', error.message || error);
+    // Menu is already rendered in 0ms via initInstantMenu(), no blocking spinner
   }
 }
 
