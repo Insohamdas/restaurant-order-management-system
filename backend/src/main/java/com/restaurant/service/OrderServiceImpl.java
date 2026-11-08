@@ -92,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // Validate minimum order amount
-        if (settings.getMinimumOrderAmount() != null && subtotal < settings.getMinimumOrderAmount()) {
+        if (settings.getMinimumOrderAmount() != null && settings.getMinimumOrderAmount() > 0 && subtotal < settings.getMinimumOrderAmount()) {
             throw new BadRequestException(String.format("Minimum order amount is ₹%.0f (Current subtotal: ₹%.0f)",
                     settings.getMinimumOrderAmount(), subtotal));
         }

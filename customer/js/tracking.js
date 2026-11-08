@@ -38,6 +38,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   setupCancelForm();
+
+  // Listen for real-time status updates from Admin or Kitchen
+  if (typeof OrderStore !== 'undefined') {
+    OrderStore.onSync((event) => {
+      if (currentTrackingOrder && (Number(event.orderId) === Number(currentTrackingOrder.id) || Number(event.orderId) === Number(currentTrackingOrder.orderId))) {
+        refreshOrderStatusSilently(currentTrackingOrder.id);
+      }
+    });
+  }
 });
 
 async function fetchAndDisplayOrder(orderId) {
@@ -50,45 +59,68 @@ async function fetchAndDisplayOrder(orderId) {
     errorAlert.textContent = '';
   }
 
+  let order = null;
+
+  // 1. Try Backend API
   try {
-    const res = await fetch(`${API_BASE}/orders/${orderId}`);
-    if (!res.ok) {
-      throw new Error(`Order #${orderId} could not be found.`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(`${API_BASE}/orders/${orderId}`, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      order = await res.json();
     }
+  } catch (e) {
+    console.warn('API lookup failed, checking local OrderStore...', e);
+  }
 
-    const order = await res.json();
-    currentTrackingOrder = order;
+  // 2. Fallback to unified local OrderStore
+  if (!order && typeof OrderStore !== 'undefined') {
+    order = OrderStore.getOrderById(orderId);
+  }
 
-    if (emptyPrompt) emptyPrompt.style.display = 'none';
-    if (detailsSection) detailsSection.style.display = 'block';
-
-    renderOrderInfo(order);
-    renderOrderTimeline(order.status);
-    renderOrderItems(order);
-
-    // Setup auto-refresh if order is still in progress
-    if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-    if (order.status !== 'DELIVERED' && order.status !== 'CANCELLED') {
-      autoRefreshTimer = setInterval(() => {
-        refreshOrderStatusSilently(order.id);
-      }, 7000);
-    }
-
-  } catch (error) {
-    console.error('Error fetching order tracking info:', error);
+  if (!order) {
     if (detailsSection) detailsSection.style.display = 'none';
-    showTrackingError(error.message || `Could not find Order #${orderId}. Please check the ID and try again.`);
+    showTrackingError(`Could not find Order #${orderId}. Please check the ID and try again.`);
+    return;
+  }
+
+  currentTrackingOrder = order;
+
+  if (emptyPrompt) emptyPrompt.style.display = 'none';
+  if (detailsSection) detailsSection.style.display = 'block';
+
+  renderOrderInfo(order);
+  renderOrderTimeline(order.status);
+  renderOrderItems(order);
+
+  // Setup auto-refresh if order is still in progress
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  if (order.status !== 'DELIVERED' && order.status !== 'CANCELLED') {
+    autoRefreshTimer = setInterval(() => {
+      refreshOrderStatusSilently(order.id || order.orderId);
+    }, 5000);
   }
 }
 
 async function refreshOrderStatusSilently(orderId) {
   try {
-    const res = await fetch(`${API_BASE}/orders/${orderId}`);
-    if (res.ok) {
-      const order = await res.json();
-      currentTrackingOrder = order;
-      renderOrderInfo(order);
-      renderOrderTimeline(order.status);
+    let updated = null;
+    try {
+      const res = await fetch(`${API_BASE}/orders/${orderId}`);
+      if (res.ok) {
+        updated = await res.json();
+      }
+    } catch (e) {}
+
+    if (!updated && typeof OrderStore !== 'undefined') {
+      updated = OrderStore.getOrderById(orderId);
+    }
+
+    if (updated) {
+      currentTrackingOrder = updated;
+      renderOrderInfo(updated);
+      renderOrderTimeline(updated.status);
     }
   } catch (e) {
     // Ignore silent poll errors
@@ -255,17 +287,22 @@ function setupCancelForm() {
     const fullReason = select.value + (comments.value.trim() ? `: ${comments.value.trim()}` : '');
 
     try {
-      const res = await fetch(`${API_BASE}/orders/${currentTrackingOrder.id}/cancel`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerPhone: currentTrackingOrder.phone,
-          reason: fullReason
-        })
-      });
+      try {
+        await fetch(`${API_BASE}/orders/${currentTrackingOrder.id}/cancel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerPhone: currentTrackingOrder.phone,
+            reason: fullReason
+          })
+        });
+      } catch (e) {
+        console.warn('API cancel failed, updating local OrderStore', e);
+      }
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Could not cancel order');
+      if (typeof OrderStore !== 'undefined') {
+        OrderStore.updateStatus(currentTrackingOrder.id, 'CANCELLED', fullReason);
+      }
 
       closeCancelModal();
       showToast('Order #' + currentTrackingOrder.id + ' has been cancelled.');

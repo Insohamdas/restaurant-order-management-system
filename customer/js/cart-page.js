@@ -46,13 +46,13 @@ async function renderCartPage() {
           <div class="cart-item-price">₹${Number(item.price).toFixed(0)} each</div>
         </div>
         <div class="qty-control">
-          <button class="qty-btn btn-qty-minus" data-food-id="${item.foodId}">-</button>
+          <button class="qty-btn btn-qty-minus" data-food-id="${item.foodId || item.id}">-</button>
           <span class="qty-display">${item.quantity}</span>
-          <button class="qty-btn btn-qty-plus" data-food-id="${item.foodId}">+</button>
+          <button class="qty-btn btn-qty-plus" data-food-id="${item.foodId || item.id}">+</button>
         </div>
         <div class="cart-item-total">₹${(item.price * item.quantity).toFixed(0)}</div>
         <div>
-          <button class="btn btn-danger btn-sm btn-remove-item" data-food-id="${item.foodId}" title="Remove item" style="padding: 5px 8px; display: inline-flex; align-items: center; justify-content: center;">
+          <button class="btn btn-danger btn-sm btn-remove-item" data-food-id="${item.foodId || item.id}" title="Remove item" style="padding: 5px 8px; display: inline-flex; align-items: center; justify-content: center;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           </button>
         </div>
@@ -63,7 +63,7 @@ async function renderCartPage() {
     container.querySelectorAll('.btn-qty-minus').forEach(btn => {
       btn.addEventListener('click', () => {
         const foodId = parseInt(btn.getAttribute('data-food-id'));
-        const item = cart.find(i => i.foodId === foodId);
+        const item = cart.find(i => Number(i.foodId) === foodId || Number(i.id) === foodId);
         if (item) {
           CartService.updateQuantity(foodId, item.quantity - 1);
           renderCartPage();
@@ -74,7 +74,7 @@ async function renderCartPage() {
     container.querySelectorAll('.btn-qty-plus').forEach(btn => {
       btn.addEventListener('click', () => {
         const foodId = parseInt(btn.getAttribute('data-food-id'));
-        const item = cart.find(i => i.foodId === foodId);
+        const item = cart.find(i => Number(i.foodId) === foodId || Number(i.id) === foodId);
         if (item) {
           CartService.updateQuantity(foodId, item.quantity + 1);
           renderCartPage();

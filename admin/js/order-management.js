@@ -18,6 +18,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initFilterListeners();
   loadOrders();
+
+  // Real-time synchronization whenever a customer places or updates an order
+  if (typeof OrderStore !== 'undefined') {
+    OrderStore.onSync(() => {
+      loadOrders(true);
+    });
+  }
+
+  // Auto-refresh poll every 5 seconds
+  setInterval(() => {
+    loadOrders(true);
+  }, 5000);
 });
 
 function initFilterListeners() {
@@ -68,30 +80,34 @@ function initFilterListeners() {
   }
 }
 
-async function loadOrders() {
+async function loadOrders(isSilent = false) {
   const tbody = document.getElementById('ordersTableBody');
   if (!tbody) return;
 
-  tbody.innerHTML = `
-    <tr>
-      <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 35px;">
-        Loading live orders stream...
-      </td>
-    </tr>
-  `;
+  if (!isSilent && allOrders.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 35px;">
+          Loading live orders stream...
+        </td>
+      </tr>
+    `;
+  }
 
   try {
     allOrders = await AdminAPI.getOrders();
     filterAndRenderOrders();
   } catch (error) {
     console.error('Error fetching orders:', error);
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="7" style="text-align: center; color: var(--danger); padding: 35px;">
-          Failed to load orders from backend server. Please verify Spring Boot API is running.
-        </td>
-      </tr>
-    `;
+    if (!isSilent) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align: center; color: var(--danger); padding: 35px;">
+            Failed to load orders from backend server. Please verify Spring Boot API is running.
+          </td>
+        </tr>
+      `;
+    }
   }
 }
 
@@ -145,7 +161,8 @@ function filterAndRenderOrders() {
 
     // 3. Search Filter
     if (searchQuery) {
-      const idMatch = String(order.id).includes(searchQuery.replace('#', ''));
+      const orderIdVal = String(order.id || order.orderId || '');
+      const idMatch = orderIdVal.includes(searchQuery.replace('#', ''));
       const nameMatch = order.customerName && order.customerName.toLowerCase().includes(searchQuery);
       const phoneMatch = order.phone && order.phone.toLowerCase().includes(searchQuery);
       const addressMatch = order.address && order.address.toLowerCase().includes(searchQuery);
@@ -173,6 +190,7 @@ function filterAndRenderOrders() {
   }
 
   tbody.innerHTML = filtered.map(order => {
+    const orderIdVal = order.id || order.orderId;
     const formattedDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN', {
       month: 'short',
       day: 'numeric',
@@ -183,14 +201,14 @@ function filterAndRenderOrders() {
 
     return `
       <tr>
-        <td style="font-weight: 800; color: var(--brand-dark);">#${order.id}</td>
+        <td style="font-weight: 800; color: var(--brand-dark);">#${orderIdVal}</td>
         <td style="font-weight: 600;">${escapeHtml(order.customerName)}</td>
         <td style="color: var(--text-muted);">${escapeHtml(order.phone)}</td>
         <td style="font-weight: 800; color: var(--brand-dark);">₹${Number(order.totalAmount).toFixed(0)}</td>
         <td><span class="badge-status status-${order.status}">${order.status.replace(/_/g, ' ')}</span></td>
         <td style="color: var(--text-muted); font-size: 0.85rem;">${formattedDate}</td>
         <td>
-          <a href="order-details.html?orderId=${order.id}" class="btn btn-secondary btn-sm" style="font-weight: 700;">
+          <a href="order-details.html?orderId=${orderIdVal}" class="btn btn-secondary btn-sm" style="font-weight: 700;">
             View Details →
           </a>
         </td>

@@ -132,8 +132,7 @@ async function authenticateGoogleUser(email, name, pictureUrl, phone) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Google authentication failed');
 
-    // Fresh login reset cart
-    localStorage.removeItem('restaurant_cart');
+    // Sync cart badge on login
     updateCartBadge();
 
     setCurrentUser({
@@ -186,9 +185,33 @@ async function loadOrders() {
   if (!container || !currentUser) return;
 
   try {
-    const res = await fetch(`${API_BASE}/orders/phone/${currentUser.phone}`);
-    if (!res.ok) throw new Error('Failed to fetch orders');
-    const orders = await res.json();
+    let orders = [];
+    try {
+      const res = await fetch(`${API_BASE}/orders/phone/${currentUser.phone}`);
+      if (res.ok) {
+        orders = await res.json();
+      }
+    } catch (apiErr) {
+      console.warn('API phone orders lookup failed, checking local store', apiErr);
+    }
+
+    // Merge with OrderStore
+    if (typeof OrderStore !== 'undefined') {
+      const localAll = OrderStore.getAll();
+      const localUserOrders = localAll.filter(o => 
+        (o.phone && currentUser.phone && String(o.phone).trim() === String(currentUser.phone).trim()) ||
+        (o.userId && currentUser.id && Number(o.userId) === Number(currentUser.id))
+      );
+      const map = new Map();
+      orders.forEach(o => map.set(Number(o.id || o.orderId), o));
+      localUserOrders.forEach(o => {
+        const id = Number(o.id || o.orderId);
+        if (!map.has(id)) {
+          map.set(id, o);
+        }
+      });
+      orders = Array.from(map.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    }
 
     if (orders.length === 0) {
       container.innerHTML = `
@@ -202,19 +225,20 @@ async function loadOrders() {
     }
 
     container.innerHTML = orders.map(order => {
-      const dateStr = new Date(order.createdAt).toLocaleDateString('en-IN', {
+      const orderIdVal = order.id || order.orderId;
+      const dateStr = new Date(order.createdAt || Date.now()).toLocaleDateString('en-IN', {
         day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
       });
 
-      const itemsHtml = order.items.map(item => `
+      const itemsHtml = (order.items || []).map(item => `
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border-light); font-size: 0.88rem;">
           <div>
-            <span style="font-weight: 700; color: #181615;">${item.quantity}x</span> ${item.foodName}
+            <span style="font-weight: 700; color: #181615;">${item.quantity || 1}x</span> ${escapeHtml(item.foodName || item.name || 'Delicious Dish')}
           </div>
           <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-weight: 600; color: #475569;">${formatCurrency(item.subtotal)}</span>
+            <span style="font-weight: 600; color: #475569;">${formatCurrency(item.subtotal || ((item.price || 0) * (item.quantity || 1)))}</span>
             ${order.status === 'DELIVERED' ? `
-              <button onclick="openReviewModal(${item.foodId}, '${escapeHtml(item.foodName)}', ${order.id})" 
+              <button onclick="openReviewModal(${item.foodId || item.id || 1}, '${escapeJs(item.foodName || item.name || '')}', ${orderIdVal})" 
                       style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 4px; padding: 2px 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
                 Rate Dish
               </button>
@@ -230,30 +254,30 @@ async function loadOrders() {
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
             <div>
               <div style="display: flex; align-items: center; gap: 10px;">
-                <h3 style="font-size: 1.1rem; font-weight: 800; color: #181615;">Order #${order.id}</h3>
+                <h3 style="font-size: 1.1rem; font-weight: 800; color: #181615;">Order #${orderIdVal}</h3>
                 ${statusBadge}
               </div>
               <p style="font-size: 0.82rem; color: #64748b; margin-top: 2px;">Placed on ${dateStr}</p>
             </div>
             <div style="text-align: right;">
-              <div style="font-size: 1.25rem; font-weight: 800; color: #df1f26;">${formatCurrency(order.totalAmount)}</div>
-              ${order.discountAmount > 0 ? `<div style="font-size: 0.78rem; color: #16a34a; font-weight: 600;">Saved ₹${Math.round(order.discountAmount)} (${order.couponCode || 'Discount'})</div>` : ''}
+              <div style="font-size: 1.25rem; font-weight: 800; color: #df1f26;">${formatCurrency(order.totalAmount || 0)}</div>
+              ${order.discountAmount > 0 ? `<div style="font-size: 0.78rem; color: #16a34a; font-weight: 600;">Saved ₹${Math.round(order.discountAmount)} (${escapeHtml(order.couponCode || 'Discount')})</div>` : ''}
             </div>
           </div>
 
           <div style="background: #fafaf9; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
-            ${itemsHtml}
+            ${itemsHtml || '<p style="color: #64748b; margin: 0; font-size: 0.85rem;">Items details recorded</p>'}
           </div>
 
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <span style="font-size: 0.85rem; color: #64748b; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              Delivery to: ${escapeHtml(order.address)}
+              Delivery to: ${escapeHtml(order.address || 'Takeaway / In-Store')}
             </span>
             <div style="display: flex; gap: 10px;">
-              <a href="track-order.html?id=${order.id}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px;">
+              <a href="track-order.html?id=${orderIdVal}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px;">
                 Track Status
               </a>
-              <button onclick="reorderPastOrder(${order.id})" class="btn btn-primary" style="font-size: 0.85rem; padding: 6px 14px;">
+              <button onclick="reorderPastOrder(${orderIdVal})" class="btn btn-primary" style="font-size: 0.85rem; padding: 6px 14px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
                 Reorder
               </button>
@@ -354,7 +378,7 @@ async function loadFavorites() {
           <p class="food-desc">${escapeHtml(item.description)}</p>
           <div class="food-footer">
             <span class="food-price">${formatCurrency(item.price)}</span>
-            <button onclick="addToCart({id: ${item.id}, name: '${escapeHtml(item.name)}', price: ${item.price}, imageUrl: '${item.imageUrl}'})" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.85rem;">
+            <button onclick="addToCart({id: ${item.id}, foodId: ${item.id}, name: '${escapeHtml(item.name)}', price: ${item.price}, imageUrl: '${item.imageUrl}'})" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.85rem;">
               Add to Cart
             </button>
           </div>

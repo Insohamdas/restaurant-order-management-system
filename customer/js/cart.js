@@ -7,7 +7,7 @@ const CART_STORAGE_KEY = 'restaurant_customer_cart';
 let BUSINESS_SETTINGS = {
   deliveryFee: 40.0,
   freeDeliveryThreshold: 499.0,
-  minimumOrderAmount: 99.0
+  minimumOrderAmount: 0.0
 };
 
 // Fetch dynamic settings from API
@@ -30,8 +30,25 @@ async function loadBusinessSettings() {
 const CartService = {
   getCart() {
     try {
-      const data = localStorage.getItem(CART_STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+      let data = localStorage.getItem(CART_STORAGE_KEY);
+      if (!data) {
+        data = localStorage.getItem('restaurant_cart');
+        if (data) {
+          localStorage.setItem(CART_STORAGE_KEY, data);
+        }
+      }
+      const cart = data ? JSON.parse(data) : [];
+      if (!Array.isArray(cart)) return [];
+      return cart.map(item => {
+        const fid = Number(item.foodId || item.id);
+        return {
+          ...item,
+          id: fid,
+          foodId: fid,
+          quantity: Number(item.quantity || 1),
+          price: Number(item.price || 0)
+        };
+      });
     } catch (e) {
       console.error('Error reading cart from localStorage', e);
       return [];
@@ -40,7 +57,9 @@ const CartService = {
 
   saveCart(cart) {
     try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      const serialized = JSON.stringify(cart);
+      localStorage.setItem(CART_STORAGE_KEY, serialized);
+      localStorage.setItem('restaurant_cart', serialized);
       this.updateCartBadge();
       this.syncAllCardSteppers();
       localStorage.setItem('hk_last_cart_activity', Date.now().toString());
@@ -106,6 +125,7 @@ const CartService = {
 
   clearCart() {
     localStorage.removeItem(CART_STORAGE_KEY);
+    localStorage.removeItem('restaurant_cart');
     this.updateCartBadge();
     this.syncAllCardSteppers();
   },

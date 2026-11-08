@@ -257,6 +257,34 @@ img {
   box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
 }
 
+/* Elegant & Reliable Select Dropdowns with Fixed Arrow Spacing */
+select.form-control,
+select.form-input,
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px 16px;
+  padding-right: 40px !important;
+  cursor: pointer;
+}
+
+select.form-control:focus,
+select.form-input:focus,
+select:focus {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ea580c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+select:disabled {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 textarea.form-control {
   resize: vertical;
   min-height: 90px;
@@ -2346,7 +2374,7 @@ body {
     padding: 18px 32px;
   }
 
-  .mobile-top-bar .icon-btn {
+  .mobile-top-bar .icon-btn:not(.top-user-pill) {
     width: 42px;
     height: 42px;
   }
@@ -2491,7 +2519,7 @@ body {
 /* Header & Hero Video Background */
 .header-hero-wrapper {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   background: #0f172a;
   border-bottom-left-radius: 30px;
   border-bottom-right-radius: 30px;
@@ -2507,6 +2535,8 @@ body {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
 }
 
 .hero-bg-video {
@@ -2526,6 +2556,8 @@ body {
     rgba(15, 23, 42, 0.25) 0%, 
     rgba(15, 23, 42, 0.45) 50%, 
     rgba(15, 23, 42, 0.8) 100%);
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
 }
 
 /* Mobile Top Nav Bar - Crystal Clear */
@@ -2537,7 +2569,7 @@ body {
   background: transparent;
   color: #ffffff;
   position: relative;
-  z-index: 10;
+  z-index: 50;
 }
 
 .mobile-top-bar .icon-btn {
@@ -2552,6 +2584,7 @@ body {
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .mobile-top-bar .icon-btn:hover {
@@ -2562,7 +2595,183 @@ body {
 .mobile-top-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* User Profile Pill in Mobile Top Bar */
+.mobile-top-bar .icon-btn.top-user-pill {
+  width: auto !important;
+  min-width: 36px;
+  max-width: 140px;
+  height: 36px;
+  padding: 0 12px 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  text-decoration: none;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .mobile-top-bar .icon-btn.top-user-pill {
+    max-width: 180px;
+    height: 40px;
+    padding: 0 14px 0 8px;
+    gap: 8px;
+  }
+}
+
+.mobile-top-bar .icon-btn.top-user-pill:hover {
+  background: rgba(0, 0, 0, 0.75);
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.top-user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #df1f26, #b91c1c);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.top-user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+
+/* Three Dots More Options Collapsible Dropdown */
+.more-options-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.nav-more-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 230px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25), 0 3px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 8px;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(0.96);
+  transform-origin: top right;
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s;
+  pointer-events: none;
+}
+
+.nav-more-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.dropdown-header {
+  padding: 6px 10px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.dropdown-header-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  display: block;
+}
+
+.dropdown-header-user {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.nav-more-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  color: #334155;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.nav-more-dropdown .dropdown-item:hover {
+  background: #f8fafc;
+  color: #df1f26;
+}
+
+.nav-more-dropdown .dropdown-item svg {
+  color: #64748b;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.nav-more-dropdown .dropdown-item:hover svg {
+  color: #df1f26;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 6px 0;
+}
+
+.dropdown-item.dropdown-signout {
+  color: #dc2626;
+}
+
+.dropdown-item.dropdown-signout:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.dropdown-item.dropdown-signout svg {
+  color: #dc2626;
 }
 
 /* Restaurant Header Card - Crisp Solid Card */

@@ -20,7 +20,7 @@ public class BusinessSetting {
     private Double freeDeliveryThreshold = 499.0;
 
     @Column(name = "minimum_order_amount", nullable = false)
-    private Double minimumOrderAmount = 99.0;
+    private Double minimumOrderAmount = 0.0;
 
     @Column(name = "tax_rate_percent", nullable = false)
     private Double taxRatePercent = 5.0;

@@ -38,6 +38,14 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
+            initData();
+        } catch (Exception e) {
+            System.err.println(">>> DataInitializer warning: " + e.getMessage());
+        }
+    }
+
+    private void initData() {
+        try {
             jdbcTemplate.execute("ALTER TABLE orders AUTO_INCREMENT = 101");
         } catch (Exception ignored) {
         }
@@ -48,7 +56,7 @@ public class DataInitializer implements CommandLineRunner {
                     "Harvest Kitchen",
                     40.0,
                     499.0,
-                    99.0,
+                    0.0,
                     5.0,
                     25,
                     true
@@ -58,8 +66,7 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         // Seed Food Items (38 comprehensive items)
-        if (foodItemRepository.count() < 30) {
-            foodItemRepository.deleteAll();
+        if (foodItemRepository.count() == 0) {
             List<FoodItem> sampleFoods = Arrays.asList(
                 // Pizzas
                 createFood("Margherita Pizza", "Classic Italian delight with 100% real mozzarella cheese, San Marzano tomatoes, and fresh basil on hand-stretched crust.", 199.0, "Pizza", "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500&auto=format&fit=crop&q=80", 45, 5, 4.8, 42, "8,9,5"),
@@ -114,7 +121,6 @@ public class DataInitializer implements CommandLineRunner {
 
             foodItemRepository.saveAll(sampleFoods);
             System.out.println(">>> 38 Premium food items successfully seeded into database!");
-        }
         } else {
             // Update existing items to ensure stock and ratings are populated
             List<FoodItem> existing = foodItemRepository.findAll();

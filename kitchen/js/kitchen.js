@@ -4,10 +4,136 @@
  * Vector Icons & Official Brand Logos, Order Details Modal, Drag & Drop & Audio Alerts
  */
 
-// Auto-detect environment: use Railway backend in production, localhost in dev
-const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+// Auto-detect environment: use local Spring Boot in dev / file / LAN, or remote production
+const isKitchenLocal = !window.location.hostname || 
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1' || 
+  window.location.hostname === '0.0.0.0' || 
+  window.location.hostname.startsWith('192.168.') || 
+  window.location.hostname.startsWith('10.') || 
+  window.location.hostname.endsWith('.local');
+
+const API_BASE = isKitchenLocal
   ? 'http://localhost:8080/api'
   : 'https://restaurant-order-management-system-cxv5.onrender.com/api';
+
+/**
+ * Global Order Store & Cross-Tab Real-Time Sync Bus
+ * Keeps Kitchen, Admin, and Customer in 100% sync
+ */
+const OrderStore = (typeof window.OrderStore !== 'undefined') ? window.OrderStore : {
+  STORAGE_KEY: 'hk_restaurant_orders_v1',
+  SYNC_EVENT_KEY: 'hk_order_sync_trigger',
+
+  getAll() {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY);
+      const orders = data ? JSON.parse(data) : [];
+      return Array.isArray(orders) ? orders : [];
+    } catch (e) {
+      console.warn('Error reading from OrderStore', e);
+      return [];
+    }
+  },
+
+  saveAll(orders) {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(orders));
+    } catch (e) {
+      console.error('Error saving orders to localStorage', e);
+    }
+  },
+
+  getOrderById(id) {
+    if (id === undefined || id === null) return null;
+    const orders = this.getAll();
+    const targetStr = String(id).replace('#', '').trim();
+    const targetNum = Number(targetStr);
+    return orders.find(o => 
+      Number(o.id) === targetNum || 
+      Number(o.orderId) === targetNum || 
+      String(o.id) === targetStr || 
+      String(o.orderId) === targetStr
+    ) || null;
+  },
+
+  saveOrder(order) {
+    if (!order) return null;
+    const orders = this.getAll();
+    const rawId = order.id || order.orderId || (Math.floor(1000 + Math.random() * 9000));
+    const orderId = Number(rawId) || rawId;
+
+    order.id = orderId;
+    order.orderId = orderId;
+    if (!order.createdAt) order.createdAt = new Date().toISOString();
+    if (!order.status) order.status = 'PLACED';
+    if (!order.orderSource) order.orderSource = 'DIRECT';
+
+    const existingIndex = orders.findIndex(o => Number(o.id) === Number(orderId) || Number(o.orderId) === Number(orderId));
+    if (existingIndex > -1) {
+      orders[existingIndex] = { ...orders[existingIndex], ...order };
+    } else {
+      orders.unshift(order);
+    }
+
+    this.saveAll(orders);
+    this.broadcastSync('ORDER_SAVED', order);
+    return order;
+  },
+
+  updateStatus(orderId, newStatus, cancellationReason = null) {
+    const orders = this.getAll();
+    const targetStr = String(orderId).replace('#', '').trim();
+    const targetNum = Number(targetStr);
+
+    const order = orders.find(o => 
+      Number(o.id) === targetNum || 
+      Number(o.orderId) === targetNum || 
+      String(o.id) === targetStr || 
+      String(o.orderId) === targetStr
+    );
+
+    if (order) {
+      order.status = newStatus;
+      if (cancellationReason) {
+        order.cancellationReason = cancellationReason;
+      }
+      this.saveAll(orders);
+      this.broadcastSync('STATUS_CHANGED', order);
+      return order;
+    }
+    return null;
+  },
+
+  broadcastSync(action, order) {
+    try {
+      const payload = JSON.stringify({
+        action,
+        orderId: order ? (order.id || order.orderId) : null,
+        status: order ? order.status : null,
+        timestamp: Date.now()
+      });
+      localStorage.setItem(this.SYNC_EVENT_KEY, payload);
+      window.dispatchEvent(new CustomEvent('hk-order-sync', { detail: { action, order } }));
+    } catch (e) {}
+  },
+
+  onSync(callback) {
+    window.addEventListener('storage', (e) => {
+      if (e.key === this.SYNC_EVENT_KEY && e.newValue) {
+        try {
+          const data = JSON.parse(e.newValue);
+          callback(data);
+        } catch (err) {}
+      }
+    });
+    window.addEventListener('hk-order-sync', (e) => {
+      if (e.detail) {
+        callback(e.detail);
+      }
+    });
+  }
+};
 
 // State
 let kitchenOrders = [];
@@ -23,107 +149,20 @@ let alertedOverdueOrders = new Set();
 let draggedOrderId = null;
 let activeModalOrderId = null;
 
-// Realistic Demo Orders with diverse channels and customer special requests
-const DEMO_ORDERS = [
-  {
-    orderId: 108,
-    customerName: "Aarav Sharma",
-    phone: "9876543210",
-    address: "Flat 402, Lotus Heights, Bandra West, Mumbai",
-    orderSource: "ZOMATO",
-    tableNumber: null,
-    specialInstructions: "Make Butter Chicken medium spicy. Cut Garlic Naan into halves. Send extra mint chutney & tissues.",
-    status: "PLACED",
-    elapsedMinutes: 3,
-    estimatedPrepTimeMinutes: 18,
-    urgencyLevel: "NORMAL",
-    createdAt: new Date(Date.now() - 3 * 60000).toISOString(),
-    items: [
-      { foodName: "Butter Chicken with Garlic Naan", quantity: 2 },
-      { foodName: "Paneer Tikka Platter", quantity: 1 },
-      { foodName: "Mango Lassi", quantity: 2 }
-    ]
-  },
-  {
-    orderId: 107,
-    customerName: "Ananya Iyer",
-    phone: "9811223344",
-    address: "Villa 12, Palm Meadows, Whitefield, Bengaluru",
-    orderSource: "SWIGGY",
-    tableNumber: null,
-    specialInstructions: "Send extra raita and spicy salan. Biryani must be piping hot.",
-    status: "PLACED",
-    elapsedMinutes: 6,
-    estimatedPrepTimeMinutes: 20,
-    urgencyLevel: "NORMAL",
-    createdAt: new Date(Date.now() - 6 * 60000).toISOString(),
-    items: [
-      { foodName: "Biryani Special Handi", quantity: 1 },
-      { foodName: "Gulab Jamun (4 pcs)", quantity: 1 }
-    ]
-  },
-  {
-    orderId: 106,
-    customerName: "Table 4 (Dine-In)",
-    phone: "9823456789",
-    address: "Dine-In • Table 4 (AC Section)",
-    orderSource: "DINE_IN",
-    tableNumber: "Table 4",
-    specialInstructions: "No onion on pizza. Thin crust extra crispy. Serve Cold Brew with less ice for guest.",
-    status: "PREPARING",
-    elapsedMinutes: 14,
-    estimatedPrepTimeMinutes: 18,
-    urgencyLevel: "URGENT",
-    createdAt: new Date(Date.now() - 14 * 60000).toISOString(),
-    items: [
-      { foodName: "Farmhouse Gourmet Pizza (Large)", quantity: 1 },
-      { foodName: "Crispy Peri Peri Fries", quantity: 2 },
-      { foodName: "Cold Brew Coffee", quantity: 2 }
-    ]
-  },
-  {
-    orderId: 105,
-    customerName: "Rahul Verma",
-    phone: "9988776655",
-    address: "B-204, Green Glen Layout, Bellandur",
-    orderSource: "MAGICPIN",
-    tableNumber: null,
-    specialInstructions: "Less oil in Paneer roll. Extra ginger and cardamom in Masala Chai.",
-    status: "PREPARING",
-    elapsedMinutes: 9,
-    estimatedPrepTimeMinutes: 15,
-    urgencyLevel: "NORMAL",
-    createdAt: new Date(Date.now() - 9 * 60000).toISOString(),
-    items: [
-      { foodName: "Paneer Makhani Roll", quantity: 2 },
-      { foodName: "Masala Chai", quantity: 2 }
-    ]
-  },
-  {
-    orderId: 104,
-    customerName: "Vikram Malhotra",
-    phone: "9911223344",
-    address: "Tower 5, Apt 1102, Cyber City, Gurugram",
-    orderSource: "DIRECT",
-    tableNumber: null,
-    specialInstructions: "Load extra jalapenos & cheese dip on the Nachos. Well-done patties for burgers.",
-    status: "READY",
-    elapsedMinutes: 21,
-    estimatedPrepTimeMinutes: 20,
-    urgencyLevel: "NORMAL",
-    createdAt: new Date(Date.now() - 21 * 60000).toISOString(),
-    items: [
-      { foodName: "Classic Truffle Smash Burger", quantity: 2 },
-      { foodName: "Loaded Cheese Nachos", quantity: 1 }
-    ]
-  }
-];
+// Real-Time Kitchen Orders State (Only Real Customer Orders)
 
 document.addEventListener('DOMContentLoaded', () => {
   initSoundPreferences();
   initVoices();
   startLiveClock();
   loadKitchenOrders();
+
+  // Real-time synchronization when orders are placed or changed
+  if (typeof OrderStore !== 'undefined') {
+    OrderStore.onSync(() => {
+      loadKitchenOrders();
+    });
+  }
 
   // Poll orders every 6 seconds
   setInterval(loadKitchenOrders, 6000);
@@ -202,38 +241,71 @@ function startLiveClock() {
 }
 
 /**
- * Load Kitchen Orders from REST API (or fallback to demo data)
+ * Load Kitchen Orders from REST API & Unified OrderStore
  */
 async function loadKitchenOrders() {
+  let apiOrders = [];
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
 
     const res = await fetch(`${API_BASE}/orders/kitchen`, { signal: controller.signal });
     clearTimeout(timeoutId);
 
-    if (!res.ok) throw new Error('Status: ' + res.status);
-    const data = await res.json();
-
-    isOfflineMode = false;
-    detectNewOrdersAndAlert(data);
-    kitchenOrders = data;
-    renderKitchenBoard(kitchenOrders);
-
-    if (activeModalOrderId) {
-      const activeOrder = kitchenOrders.find(o => o.orderId === activeModalOrderId);
-      if (activeOrder) renderOrderDetailContent(activeOrder);
+    if (res.ok) {
+      apiOrders = await res.json();
     }
-
   } catch (err) {
-    // Fallback quietly to demo orders
-    if (!isOfflineMode && kitchenOrders.length === 0) {
-      isOfflineMode = true;
-      kitchenOrders = JSON.parse(JSON.stringify(DEMO_ORDERS));
-      renderKitchenBoard(kitchenOrders);
-    } else if (isOfflineMode) {
-      renderKitchenBoard(kitchenOrders);
+    // API not reachable
+  }
+
+  // Active kitchen statuses
+  const ACTIVE_STATUSES = ['PLACED', 'CONFIRMED', 'PREPARING', 'READY'];
+
+  // Retrieve active orders from OrderStore
+  let localActiveOrders = [];
+  if (typeof OrderStore !== 'undefined') {
+    const allLocal = OrderStore.getAll();
+    localActiveOrders = allLocal.filter(o => ACTIVE_STATUSES.includes(o.status)).map(o => ({
+      orderId: Number(o.orderId || o.id),
+      id: Number(o.orderId || o.id),
+      customerName: o.customerName || 'Customer',
+      phone: o.phone || '',
+      address: o.address || '',
+      orderSource: o.orderSource || 'DIRECT',
+      tableNumber: o.tableNumber || null,
+      specialInstructions: o.specialInstructions || '',
+      status: o.status,
+      elapsedMinutes: o.elapsedMinutes !== undefined ? o.elapsedMinutes : (o.createdAt ? Math.floor((Date.now() - new Date(o.createdAt).getTime()) / 60000) : 0),
+      estimatedPrepTimeMinutes: o.estimatedPrepTimeMinutes || 25,
+      urgencyLevel: o.urgencyLevel || 'NORMAL',
+      createdAt: o.createdAt || new Date().toISOString(),
+      items: (o.items || []).map(i => ({
+        foodName: i.foodName || i.name || 'Dish',
+        quantity: Number(i.quantity || 1)
+      }))
+    }));
+  }
+
+  // Merge orders by orderId
+  const orderMap = new Map();
+  apiOrders.forEach(o => orderMap.set(Number(o.orderId || o.id), o));
+  localActiveOrders.forEach(o => {
+    const oid = Number(o.orderId || o.id);
+    if (!orderMap.has(oid)) {
+      orderMap.set(oid, o);
     }
+  });
+
+  kitchenOrders = Array.from(orderMap.values());
+  isOfflineMode = false;
+
+  detectNewOrdersAndAlert(kitchenOrders);
+  renderKitchenBoard(kitchenOrders);
+
+  if (activeModalOrderId) {
+    const activeOrder = kitchenOrders.find(o => Number(o.orderId) === Number(activeModalOrderId) || Number(o.id) === Number(activeModalOrderId));
+    if (activeOrder) renderOrderDetailContent(activeOrder);
   }
 }
 
@@ -952,19 +1024,23 @@ function handleDispatch(orderId, orderSource, tableNumber) {
  * Update Order Status
  */
 async function updateOrderStatus(orderId, newStatus) {
-  if (isOfflineMode) {
-    const order = kitchenOrders.find(o => o.orderId === orderId);
-    if (order) {
-      if (newStatus === 'OUT_FOR_DELIVERY' || newStatus === 'DELIVERED') {
-        kitchenOrders = kitchenOrders.filter(o => o.orderId !== orderId);
-      } else {
-        order.status = newStatus;
-      }
-      renderKitchenBoard(kitchenOrders);
-    }
-    return;
+  // Always update in OrderStore
+  if (typeof OrderStore !== 'undefined') {
+    OrderStore.updateStatus(orderId, newStatus);
   }
 
+  // Update in local memory
+  const order = kitchenOrders.find(o => Number(o.orderId) === Number(orderId) || Number(o.id) === Number(orderId));
+  if (order) {
+    if (newStatus === 'OUT_FOR_DELIVERY' || newStatus === 'DELIVERED' || newStatus === 'CANCELLED') {
+      kitchenOrders = kitchenOrders.filter(o => Number(o.orderId) !== Number(orderId) && Number(o.id) !== Number(orderId));
+    } else {
+      order.status = newStatus;
+    }
+    renderKitchenBoard(kitchenOrders);
+  }
+
+  // Try updating API if available
   try {
     const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
       method: 'PUT',
@@ -972,14 +1048,11 @@ async function updateOrderStatus(orderId, newStatus) {
       body: JSON.stringify({ status: newStatus })
     });
 
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.message || 'Status update failed');
+    if (res.ok) {
+      loadKitchenOrders();
     }
-    loadKitchenOrders();
   } catch (err) {
-    console.error('KDS Order update error:', err);
-    showToast('Error updating order: ' + err.message, 'toast-red');
+    console.warn('API status update failed, local store updated:', err);
   }
 }
 

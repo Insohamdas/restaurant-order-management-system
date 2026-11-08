@@ -25,6 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initStatusUpdateForm();
   loadOrderDetails(currentOrderId);
+
+  if (typeof OrderStore !== 'undefined') {
+    OrderStore.onSync((event) => {
+      if (Number(event.orderId) === Number(currentOrderId)) {
+        loadOrderDetails(currentOrderId);
+      }
+    });
+  }
 });
 
 async function loadOrderDetails(orderId) {

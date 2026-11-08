@@ -3,7 +3,15 @@
  */
 
 // Auto-detect environment: use Render backend in production, localhost in dev
-const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+const isSettingsLocal = !window.location.hostname || 
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1' || 
+  window.location.hostname === '0.0.0.0' || 
+  window.location.hostname.startsWith('192.168.') || 
+  window.location.hostname.startsWith('10.') || 
+  window.location.hostname.endsWith('.local');
+
+const API_BASE = isSettingsLocal
   ? 'http://localhost:8080/api'
   : 'https://restaurant-order-management-system-cxv5.onrender.com/api';
 

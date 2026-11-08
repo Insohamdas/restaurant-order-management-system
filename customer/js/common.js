@@ -3,10 +3,136 @@
  * Modern, Lightweight ES6 Vanilla JS
  */
 
-// Auto-detect environment: use Render backend in production, localhost in dev
-const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+// Auto-detect environment: use local Spring Boot in dev / file / LAN, or remote production
+const isLocalEnv = !window.location.hostname || 
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1' || 
+  window.location.hostname === '0.0.0.0' || 
+  window.location.hostname.startsWith('192.168.') || 
+  window.location.hostname.startsWith('10.') || 
+  window.location.hostname.endsWith('.local');
+
+const API_BASE = isLocalEnv
   ? 'http://localhost:8080/api'
   : 'https://restaurant-order-management-system-cxv5.onrender.com/api';
+
+/**
+ * Global Order Store & Cross-Tab Real-Time Sync Bus
+ * Keeps Customer, Admin Panel, and Kitchen Section in 100% sync
+ */
+const OrderStore = {
+  STORAGE_KEY: 'hk_restaurant_orders_v1',
+  SYNC_EVENT_KEY: 'hk_order_sync_trigger',
+
+  getAll() {
+    try {
+      const data = localStorage.getItem(this.STORAGE_KEY);
+      const orders = data ? JSON.parse(data) : [];
+      return Array.isArray(orders) ? orders : [];
+    } catch (e) {
+      console.warn('Error reading from OrderStore', e);
+      return [];
+    }
+  },
+
+  saveAll(orders) {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(orders));
+    } catch (e) {
+      console.error('Error saving orders to localStorage', e);
+    }
+  },
+
+  getOrderById(id) {
+    if (id === undefined || id === null) return null;
+    const orders = this.getAll();
+    const targetStr = String(id).replace('#', '').trim();
+    const targetNum = Number(targetStr);
+    return orders.find(o => 
+      Number(o.id) === targetNum || 
+      Number(o.orderId) === targetNum || 
+      String(o.id) === targetStr || 
+      String(o.orderId) === targetStr
+    ) || null;
+  },
+
+  saveOrder(order) {
+    if (!order) return null;
+    const orders = this.getAll();
+    const rawId = order.id || order.orderId || (Math.floor(1000 + Math.random() * 9000));
+    const orderId = Number(rawId) || rawId;
+
+    order.id = orderId;
+    order.orderId = orderId;
+    if (!order.createdAt) order.createdAt = new Date().toISOString();
+    if (!order.status) order.status = 'PLACED';
+    if (!order.orderSource) order.orderSource = 'DIRECT';
+
+    const existingIndex = orders.findIndex(o => Number(o.id) === Number(orderId) || Number(o.orderId) === Number(orderId));
+    if (existingIndex > -1) {
+      orders[existingIndex] = { ...orders[existingIndex], ...order };
+    } else {
+      orders.unshift(order);
+    }
+
+    this.saveAll(orders);
+    this.broadcastSync('ORDER_SAVED', order);
+    return order;
+  },
+
+  updateStatus(orderId, newStatus, cancellationReason = null) {
+    const orders = this.getAll();
+    const targetStr = String(orderId).replace('#', '').trim();
+    const targetNum = Number(targetStr);
+
+    const order = orders.find(o => 
+      Number(o.id) === targetNum || 
+      Number(o.orderId) === targetNum || 
+      String(o.id) === targetStr || 
+      String(o.orderId) === targetStr
+    );
+
+    if (order) {
+      order.status = newStatus;
+      if (cancellationReason) {
+        order.cancellationReason = cancellationReason;
+      }
+      this.saveAll(orders);
+      this.broadcastSync('STATUS_CHANGED', order);
+      return order;
+    }
+    return null;
+  },
+
+  broadcastSync(action, order) {
+    try {
+      const payload = JSON.stringify({
+        action,
+        orderId: order ? (order.id || order.orderId) : null,
+        status: order ? order.status : null,
+        timestamp: Date.now()
+      });
+      localStorage.setItem(this.SYNC_EVENT_KEY, payload);
+      window.dispatchEvent(new CustomEvent('hk-order-sync', { detail: { action, order } }));
+    } catch (e) {}
+  },
+
+  onSync(callback) {
+    window.addEventListener('storage', (e) => {
+      if (e.key === this.SYNC_EVENT_KEY && e.newValue) {
+        try {
+          const data = JSON.parse(e.newValue);
+          callback(data);
+        } catch (err) {}
+      }
+    });
+    window.addEventListener('hk-order-sync', (e) => {
+      if (e.detail) {
+        callback(e.detail);
+      }
+    });
+  }
+};
 
 // Format currency
 function formatCurrency(amount) {
@@ -34,19 +160,47 @@ function logoutUser() {
   window.location.reload();
 }
 
-// Cart Management
+// Cart Management - Unified storage across cart.js, checkout.js, and common.js
+const COMMON_CART_KEY = 'restaurant_customer_cart';
+const LEGACY_CART_KEY = 'restaurant_cart';
+
 function getCart() {
   try {
-    return JSON.parse(localStorage.getItem('restaurant_cart') || '[]');
+    let data = localStorage.getItem(COMMON_CART_KEY);
+    if (!data) {
+      data = localStorage.getItem(LEGACY_CART_KEY);
+      if (data) {
+        localStorage.setItem(COMMON_CART_KEY, data);
+      }
+    }
+    const cart = data ? JSON.parse(data) : [];
+    if (!Array.isArray(cart)) return [];
+    // Ensure every item has both id and foodId normalized as Numbers
+    return cart.map(item => {
+      const fid = Number(item.foodId || item.id);
+      return {
+        ...item,
+        id: fid,
+        foodId: fid,
+        quantity: Number(item.quantity || 1),
+        price: Number(item.price || 0)
+      };
+    });
   } catch (e) {
     return [];
   }
 }
 
 function saveCart(cart) {
-  localStorage.setItem('restaurant_cart', JSON.stringify(cart));
-  updateCartBadge();
-  localStorage.setItem('hk_last_cart_activity', Date.now().toString());
+  try {
+    const serialized = JSON.stringify(cart);
+    localStorage.setItem(COMMON_CART_KEY, serialized);
+    localStorage.setItem(LEGACY_CART_KEY, serialized);
+    updateCartBadge();
+    localStorage.setItem('hk_last_cart_activity', Date.now().toString());
+  } catch (e) {
+    console.error('Error saving cart', e);
+  }
 }
 
 function updateCartBadge() {
@@ -127,22 +281,30 @@ function initMobileBottomNav() {
 
 // Add Item to Cart
 function addToCart(foodItem, quantity = 1) {
+  if (!foodItem) return;
+  const foodId = Number(foodItem.foodId || foodItem.id);
+  if (!foodId) return;
+
   let cart = getCart();
-  const existing = cart.find(i => i.id === foodItem.id);
+  const existing = cart.find(i => (Number(i.foodId) === foodId || Number(i.id) === foodId));
   if (existing) {
     existing.quantity += quantity;
   } else {
     cart.push({
-      id: foodItem.id,
-      name: foodItem.name,
-      price: foodItem.price,
-      imageUrl: foodItem.imageUrl,
-      category: foodItem.category,
+      id: foodId,
+      foodId: foodId,
+      name: foodItem.name || 'Delicious Dish',
+      price: Number(foodItem.price || 0),
+      imageUrl: foodItem.imageUrl || '',
+      category: foodItem.category || '',
       quantity: quantity
     });
   }
   saveCart(cart);
-  showToast(`Added ${foodItem.name} to cart!`);
+  if (typeof CartService !== 'undefined' && CartService.syncAllCardSteppers) {
+    CartService.syncAllCardSteppers();
+  }
+  showToast(`Added ${foodItem.name || 'Dish'} to cart!`);
 }
 
 // Toast Notifications
@@ -186,11 +348,117 @@ function showToast(message, type = 'success') {
 
 function updateNavbarAuth() {
   const user = getCurrentUser();
-  const accountLinks = document.querySelectorAll('a[href="account.html"]');
-  accountLinks.forEach(link => {
+  const firstName = (user && user.name) ? user.name.trim().split(' ')[0] : '';
+  const initial = firstName ? firstName.charAt(0).toUpperCase() : 'U';
+
+  // 1. Mobile top bar profile button (transforms into sleek pill when signed in)
+  const topAccountBtns = document.querySelectorAll('#topAccountBtn, .mobile-top-bar a[href="account.html"]');
+  topAccountBtns.forEach(btn => {
+    if (user && firstName) {
+      btn.classList.add('top-user-pill');
+      btn.innerHTML = `
+        <span class="top-user-avatar">${initial}</span>
+        <span class="top-user-name">${escapeHtml(firstName)}</span>
+      `;
+      btn.setAttribute('title', `Logged in as ${user.name}`);
+      btn.setAttribute('aria-label', `Logged in as ${user.name}`);
+    } else {
+      btn.classList.remove('top-user-pill');
+      btn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+        </svg>
+      `;
+      btn.setAttribute('title', 'Sign In / Account');
+      btn.setAttribute('aria-label', 'Sign In / Account');
+    }
+  });
+
+  // 2. Standard navbar links (desktop headers)
+  const navLinks = document.querySelectorAll('.nav-links a[href="account.html"]');
+  navLinks.forEach(link => {
+    if (user && firstName) {
+      link.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${escapeHtml(firstName)}`;
+    } else {
+      link.innerHTML = 'Account';
+    }
+  });
+
+  // 3. Mobile bottom navigation bar
+  const bottomNavAccount = document.querySelector('.m-bottom-nav a[href="account.html"] span');
+  if (bottomNavAccount) {
+    bottomNavAccount.textContent = (user && firstName) ? firstName : 'Account';
+  }
+
+  // 4. Update the three-dot more options dropdown state
+  updateDropdownAuth(user, firstName);
+}
+
+function updateDropdownAuth(user = null, firstName = '') {
+  if (!user) user = getCurrentUser();
+  if (!firstName && user && user.name) firstName = user.name.trim().split(' ')[0];
+
+  const headerUser = document.getElementById('dropdownHeaderUser');
+  if (headerUser) {
+    headerUser.textContent = (user && user.name) ? `Hi, ${user.name}` : 'Welcome Guest';
+  }
+
+  const authContainer = document.getElementById('dropdownAuthActionContainer');
+  if (authContainer) {
     if (user && user.name) {
-      const firstName = user.name.split(' ')[0];
-      link.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${firstName}`;
+      authContainer.innerHTML = `
+        <button type="button" onclick="logoutUser()" class="dropdown-item dropdown-signout">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Sign Out (${escapeHtml(firstName)})</span>
+        </button>
+      `;
+    } else {
+      authContainer.innerHTML = `
+        <a href="account.html" class="dropdown-item" id="dropdownAuthBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span>Sign In / Register</span>
+        </a>
+      `;
+    }
+  }
+}
+
+function toggleNavMoreDropdown(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const dropdown = document.getElementById('navMoreDropdown');
+  const btn = document.getElementById('btnMoreOptions');
+  if (!dropdown) return;
+
+  const isShowing = dropdown.classList.toggle('show');
+  if (btn) btn.setAttribute('aria-expanded', isShowing ? 'true' : 'false');
+  if (isShowing) {
+    updateDropdownAuth();
+  }
+}
+
+function initNavMoreDropdownListeners() {
+  document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('navMoreDropdown');
+    const btn = document.getElementById('btnMoreOptions');
+    if (dropdown && dropdown.classList.contains('show')) {
+      if (!dropdown.contains(e.target) && !btn?.contains(e.target)) {
+        dropdown.classList.remove('show');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const dropdown = document.getElementById('navMoreDropdown');
+      const btn = document.getElementById('btnMoreOptions');
+      if (dropdown && dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+      }
     }
   });
 }
@@ -213,6 +481,7 @@ async function initCommonHeader() {
   initMobileBottomNav();
   updateCartBadge();
   updateNavbarAuth();
+  initNavMoreDropdownListeners();
   fetchAndDisplayActiveOffer();
 }
 
