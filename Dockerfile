@@ -22,3 +22,4 @@ EXPOSE 8080
 
 # JVM memory & performance optimization for Render 512MB RAM container
 ENTRYPOINT ["sh", "-c", "java -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC -Dserver.port=${PORT:-8080} -Djava.security.egd=file:/dev/./urandom -jar app.jar"]
+
