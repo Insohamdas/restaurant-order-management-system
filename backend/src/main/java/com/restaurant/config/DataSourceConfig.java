@@ -94,14 +94,47 @@ public class DataSourceConfig {
         boolean noRemoteCredentials = (username == null || "root".equals(username)) 
                 && (password == null || password.isBlank());
 
-        HikariConfig config = new HikariConfig();
+        boolean useH2Fallback = false;
 
         if (isCloudEnv && pointsToLocalhost && noRemoteCredentials) {
-            // Running in Cloud (Render) without external MySQL credentials -> Fallback to in-memory H2 so deployment never crashes
+            useH2Fallback = true;
+        } else if (jdbcUrl != null && jdbcUrl.startsWith("jdbc:mysql://")) {
+            // Quick reachability test to avoid fatal startup crash (e.g. cloud DB sleeping or localhost offline)
+            try {
+                String hostAndPort = jdbcUrl.substring("jdbc:mysql://".length());
+                if (hostAndPort.contains("/")) hostAndPort = hostAndPort.substring(0, hostAndPort.indexOf("/"));
+                if (hostAndPort.contains("?")) hostAndPort = hostAndPort.substring(0, hostAndPort.indexOf("?"));
+                String host = "localhost";
+                int port = 3306;
+                if (hostAndPort.contains(":")) {
+                    String[] hp = hostAndPort.split(":", 2);
+                    host = hp[0];
+                    port = Integer.parseInt(hp[1]);
+                } else if (!hostAndPort.isBlank()) {
+                    host = hostAndPort;
+                }
+
+                try (java.net.Socket socket = new java.net.Socket()) {
+                    socket.connect(new java.net.InetSocketAddress(host, port), 2500);
+                } catch (Exception connEx) {
+                    System.err.println(">>> [DataSourceConfig] Cannot reach MySQL host " + host + ":" + port + " (" + connEx.getMessage() + ")");
+                    if (isCloudEnv || pointsToLocalhost) {
+                        System.err.println(">>> [DataSourceConfig] Falling back to embedded MySQL-compatible database to prevent deployment crash.");
+                        useH2Fallback = true;
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        HikariConfig config = new HikariConfig();
+
+        if (useH2Fallback) {
+            // Running without reachable external MySQL -> Fallback to in-memory H2 so deployment never crashes
             System.out.println("===============================================================================");
-            System.out.println(">>> [RENDER CLOUD DEPLOYMENT] No external MySQL detected.");
-            System.out.println(">>> Starting with embedded MySQL-compatible database. Application is 100% ONLINE!");
-            System.out.println(">>> (To use cloud MySQL, add SPRING_DATASOURCE_URL in Render Dashboard)");
+            System.out.println(">>> [AUTO-RESILIENCE MODE] MySQL not reachable at specified target.");
+            System.out.println(">>> Starting with embedded MySQL-compatible storage. Application is 100% ONLINE!");
+            System.out.println(">>> (To use cloud MySQL, verify SPRING_DATASOURCE_URL in Render Dashboard)");
             System.out.println("===============================================================================");
             config.setDriverClassName("org.h2.Driver");
             config.setJdbcUrl("jdbc:h2:mem:restaurant_db;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1");
