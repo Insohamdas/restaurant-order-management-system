@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: restaurant-order-management-system-cxv5
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/foods
+    envVars:
+      - key: PORT
+        value: 8080
